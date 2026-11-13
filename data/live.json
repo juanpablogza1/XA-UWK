@@ -1,16 +1,12 @@
 {
- "checked": 1794591306,
+ "checked": 1794591522,
  "last": {
-  "t": 1794517812,
-  "lat": 30.5902,
-  "lon": -96.35963,
-  "ground": true,
-  "alt": null,
-  "gs": 9,
-  "trk": 0,
-  "historic": true,
-  "ap": "KCLL",
-  "apName": "Easterwood Field",
-  "apCity": "College Station"
+  "t": 1794591522,
+  "lat": 27.015518,
+  "lon": -97.156867,
+  "ground": false,
+  "alt": 19300,
+  "gs": 280.5,
+  "trk": 192.35
  }
 }
