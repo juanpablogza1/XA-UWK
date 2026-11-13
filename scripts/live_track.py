@@ -182,8 +182,13 @@ def main():
         return a["code"] if a else None
 
     if cur and cur.get("depHint") and (cur.get("first") or cur.get("track")):
-        t0 = cur["track"][0] if cur.get("track") else None
-        first = cur.get("first") or {"t": t0[0], "lat": t0[1], "lon": t0[2], "alt": t0[3], "gs": 200, "trk": None, "vr": None}
+        tr = cur.get("track") or []
+        first = cur.get("first")
+        if not first and tr:
+            t0 = tr[0]
+            t1 = next((x for x in tr[1:] if H.dist_nm(t0[1], t0[2], x[1], x[2]) > 1), None)
+            trk = round(H.bearing(t0[1], t0[2], t1[1], t1[2])) if t1 else None
+            first = {"t": t0[0], "lat": t0[1], "lon": t0[2], "alt": t0[3], "gs": 200, "trk": trk, "vr": None}
         A = infer_dep(aps, first)
         if A:
             cur["dep"] = remember(A)
