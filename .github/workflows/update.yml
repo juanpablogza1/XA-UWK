@@ -5,7 +5,7 @@ name: Actualizar vuelos XA-UWK
 # inicia el seguimiento en vivo (live.yml). Tambien se lanza desde la app.
 on:
   schedule:
-    - cron: "7,37 * * * *"   # cada 30 min
+    - cron: "2,17,32,47 * * * *"   # cada 15 min
   workflow_dispatch:
 
 permissions:
@@ -25,6 +25,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Semana actual
+        id: wk
+        run: echo "week=$(date -u +%G-%V)" >> "$GITHUB_OUTPUT"
+      - name: Cache de aeropuertos (OurAirports, se renueva cada semana)
+        uses: actions/cache@v4
+        with:
+          path: /tmp/ourairports.csv
+          key: ourairports-${{ steps.wk.outputs.week }}
       - name: Descargar trazas de adsb.lol y reconstruir vuelos
         env:
           HISTORY_DAYS: "366"

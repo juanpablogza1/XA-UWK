@@ -693,8 +693,9 @@ def build_legs(pts):
     for L in legs:
         dur = L.pts[-1][0] - L.pts[0][0]
         span = dist_nm(L.pts[0][1], L.pts[0][2], L.pts[-1][1], L.pts[-1][2])
-        if dur < 180 and span < 3:
-            continue  # ruido (rodaje, rebote de datos)
+        top = max((p[3] for p in L.pts if isinstance(p[3], int)), default=0)
+        if dur < 180 and span < 3 and top < 10000:
+            continue  # ruido en tierra (rodaje, rebote de datos); nunca un tramo en crucero
         out.append(L)
     return out
 
@@ -1090,8 +1091,20 @@ def main():
     start = (today - timedelta(days=HISTORY_DAYS)).isoformat()
     pend = [d for d in ((today - timedelta(days=i)).isoformat() for i in range(1, HISTORY_DAYS + 1))
             if days.get(d, {}).get("status") not in ("ok", "none", "missing")]
+    # periodos largos sin ninguna posicion del avion (>= 14 dias seguidos)
+    gaps, run = [], []
+    for d in sorted(days):
+        if days[d].get("status") in ("none", "missing"):
+            run.append(d)
+        else:
+            if len(run) >= 14:
+                gaps.append([run[0], run[-1]])
+            run = []
+    if len(run) >= 14:
+        gaps.append([run[0], run[-1]])
     meta = {
         "updated": int(time.time()),
+        "gaps": gaps,
         "source": "adsb.lol (ODbL 1.0)",
         "from": done[0] if done else None,
         "to": done[-1] if done else None,

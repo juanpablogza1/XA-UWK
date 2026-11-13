@@ -107,6 +107,16 @@ def publish(obj):
         print("push:", r.stderr.strip()[:200])
 
 
+def last_arrival():
+    """Aeropuerto de llegada del vuelo mas reciente del historial."""
+    try:
+        fl = json.load(open(os.path.join(H.DATA, "flights.json"), encoding="utf-8"))
+        fl.sort(key=lambda f: f["on"])
+        return fl[-1]["arr"] if fl else None
+    except Exception:  # noqa: BLE001
+        return None
+
+
 def ap_info(a):
     return {"code": a["code"], "name": a["name"], "city": a["city"], "lat": a["lat"], "lon": a["lon"]}
 
@@ -174,8 +184,14 @@ def main():
                         dep = aps.at_ground(last_ground["lat"], last_ground["lon"])
                     else:
                         dep = H.low_airport((p["t"], p["lat"], p["lon"], p["alt"], p["gs"], p["trk"], p["vr"]), aps)
-                    cur = {"dep": remember(dep), "off": p["t"] if dep else None,
-                           "partial": dep is None, "track": []}
+                    hint = False
+                    if dep is None:
+                        # empezo ya en el aire: el origen probable es el ultimo aeropuerto conocido
+                        code = (flights_today[-1].get("arr") if flights_today else None) or last_arrival()
+                        if code and code in aps.by_code:
+                            dep, hint = aps.by_code[code], True
+                    cur = {"dep": remember(dep), "off": p["t"] if dep and not hint else None,
+                           "partial": dep is None or hint, "depHint": hint, "track": []}
                 tr = cur["track"]
                 if not tr or tr[-1][0] != p["t"]:
                     tr.append([p["t"], p["lat"], p["lon"], p["alt"]])

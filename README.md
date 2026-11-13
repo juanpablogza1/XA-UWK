@@ -6,10 +6,12 @@ App: https://juanpablogza1.github.io/XA-UWK/
 
 ## Qué muestra
 
-- Filtros arriba que controlan toda la app: periodo (7 días, 30 días, 90 días, 12 meses, todo o fechas exactas) y aeropuerto. El periodo activo se ve siempre debajo de los filtros y en el título del mapa.
-- Mapa con la **trayectoria real** de cada vuelo. Línea continua = posiciones ADS-B observadas; línea punteada = tramo sin cobertura (estimado); en rojo, estimación de confianza baja. Al tocar una línea o un vuelo se resalta y se ve su detalle.
-- Vuelos por mes (tocar un mes lo filtra), aeropuertos y rutas más frecuentes, y la lista de vuelos con hora de despegue y aterrizaje (hora de Monterrey).
-- Último contacto del avión (en tierra / en vuelo).
+La app tiene tres pestañas (abajo en el celular, arriba en la computadora). Los filtros de periodo (7 días, 30 días, 90 días, 1 año, todo o fechas exactas) y de aeropuerto son los mismos en las tres, y el periodo activo siempre se ve.
+
+- **Mapa:** la trayectoria real de cada vuelo del periodo. Línea continua = observada; punteada = tramo sin señal (estimado); roja = estimación de confianza baja. Tocar una ruta abre su ficha (horarios, distancia, altitud, cómo se determinó el origen/destino) con flechas para pasar al vuelo más reciente o más antiguo; tocar un aeropuerto permite filtrar por él.
+- **Vuelos:** lista por mes con buscador (código, ciudad o nombre de aeropuerto) y la sección **Hoy** con los vuelos seguidos en vivo.
+- **Resumen:** totales, calendario de días con vuelo de los últimos 12 meses (tocar un día o un mes lo filtra), vuelos y horas por mes, destinos y rutas frecuentes, y los periodos en que el avión no transmitió.
+- **Banner "En vuelo ahora":** aparece arriba solo mientras el avión está volando; al tocarlo, el mapa sigue al avión y muestra altitud, velocidad y rumbo en vivo.
 
 ## De dónde salen los datos
 
@@ -30,9 +32,9 @@ Cada estimación trae su confianza (alta, media o baja) y, si es baja, las alter
 
 ## Actualización y seguimiento en vivo
 
-- `.github/workflows/update.yml` corre cada 30 min: descarga los días nuevos de adsb.lol (se publican al día siguiente), reconstruye los vuelos, revisa la posición actual y hace commit en `data/` solo si hubo cambios. Si el avión está volando, inicia el seguimiento en vivo.
+- `.github/workflows/update.yml` corre cada 15 min: descarga los días nuevos de adsb.lol (se publican al día siguiente), reconstruye los vuelos, revisa la posición actual y hace commit en `data/` solo si hubo cambios. Si el avión está volando, inicia el seguimiento en vivo.
 - `.github/workflows/live.yml` sigue al avión mientras vuela: consulta su posición cada 10 s (api.adsb.lol, respaldo adsb.fi) y la publica en la rama `live` (un solo commit que se reemplaza). Termina 75 min después de aterrizar si no vuelve a despegar.
-- En la app: el botón ⟳ lanza la actualización y recarga los datos al terminar; la tarjeta **En vivo** muestra altitud, velocidad, rumbo y el avión en el mapa; **Hoy** lista los vuelos seguidos en el día.
+- En la app: el botón ⟳ lanza la actualización y recarga los datos al terminar; el banner **En vuelo ahora** aparece solo mientras el avión vuela.
 
 Para usar los botones desde la app hace falta un *fine-grained token* de GitHub (Ajustes ⚙︎ en la app): solo el repositorio XA-UWK, permisos **Actions: Read and write** y **Contents: Read-only**. Se guarda únicamente en el dispositivo. Sin token, la app igual muestra el vivo (con unos minutos de retraso) y los datos se actualizan solos.
 

@@ -1,4 +1,74 @@
 {
+ "1TE5": {
+  "name": "Corpora Airport",
+  "city": "Hearne",
+  "country": "US",
+  "iata": "",
+  "lat": 30.816299438476562,
+  "lon": -96.6010971069336,
+  "type": "small_airport",
+  "elev": 270
+ },
+ "53XS": {
+  "name": "Kornegay Private Airport",
+  "city": "San Benito",
+  "country": "US",
+  "iata": "",
+  "lat": 26.148399353027344,
+  "lon": -97.5916976928711,
+  "type": "small_airport",
+  "elev": 30
+ },
+ "92TA": {
+  "name": "Drennan Farm Airport",
+  "city": "Los Fresnos",
+  "country": "US",
+  "iata": "",
+  "lat": 26.121200561523438,
+  "lon": -97.4280014038086,
+  "type": "small_airport",
+  "elev": 27
+ },
+ "K20V": {
+  "name": "McElroy Airfield",
+  "city": "Kremmling",
+  "country": "US",
+  "iata": "",
+  "lat": 40.05341,
+  "lon": -106.369078,
+  "type": "small_airport",
+  "elev": 7411
+ },
+ "K7T7": {
+  "name": "Skywest Inc Airport",
+  "city": "Midland",
+  "country": "US",
+  "iata": "",
+  "lat": 31.85849952697754,
+  "lon": -102.0739974975586,
+  "type": "small_airport",
+  "elev": 2800
+ },
+ "K9R5": {
+  "name": "Hunt Airport",
+  "city": "Portland",
+  "country": "US",
+  "iata": "",
+  "lat": 27.888076,
+  "lon": -97.349226,
+  "type": "small_airport",
+  "elev": 40
+ },
+ "KAUS": {
+  "name": "Austin Bergstrom International Airport",
+  "city": "Austin",
+  "country": "US",
+  "iata": "AUS",
+  "lat": 30.197535,
+  "lon": -97.662015,
+  "type": "large_airport",
+  "elev": 542
+ },
  "KBRO": {
   "name": "Brownsville South Padre Island International Airport",
   "city": "Brownsville",
@@ -9,6 +79,16 @@
   "type": "medium_airport",
   "elev": 22
  },
+ "KCFD": {
+  "name": "Coulter Field",
+  "city": "Bryan",
+  "country": "US",
+  "iata": "CFD",
+  "lat": 30.715700149499998,
+  "lon": -96.3313980103,
+  "type": "small_airport",
+  "elev": 367
+ },
  "KCLL": {
   "name": "Easterwood Field",
   "city": "College Station",
@@ -18,6 +98,26 @@
   "lon": -96.3638,
   "type": "medium_airport",
   "elev": 320
+ },
+ "KCRP": {
+  "name": "Corpus Christi International Airport",
+  "city": "Corpus Christi",
+  "country": "US",
+  "iata": "CRP",
+  "lat": 27.770399,
+  "lon": -97.501198,
+  "type": "medium_airport",
+  "elev": 44
+ },
+ "KEGE": {
+  "name": "Eagle County Regional Airport",
+  "city": "Eagle",
+  "country": "US",
+  "iata": "EGE",
+  "lat": 39.64260101,
+  "lon": -106.9179993,
+  "type": "medium_airport",
+  "elev": 6548
  },
  "KFTY": {
   "name": "Fulton County Airport Brown Field",
@@ -39,6 +139,16 @@
   "type": "small_airport",
   "elev": 628
  },
+ "KGWS": {
+  "name": "Sumers Airpark",
+  "city": "Glenwood Springs",
+  "country": "US",
+  "iata": "GWS",
+  "lat": 39.506083,
+  "lon": -107.309232,
+  "type": "small_airport",
+  "elev": 5921
+ },
  "KHOU": {
   "name": "William P. Hobby Airport",
   "city": "Houston",
@@ -59,6 +169,16 @@
   "type": "medium_airport",
   "elev": 36
  },
+ "KLHB": {
+  "name": "Hearne Municipal Airport",
+  "city": "Hearne",
+  "country": "US",
+  "iata": "",
+  "lat": 30.871799,
+  "lon": -96.6222,
+  "type": "small_airport",
+  "elev": 285
+ },
  "KLRD": {
   "name": "Laredo International Airport",
   "city": "Laredo",
@@ -69,6 +189,26 @@
   "type": "medium_airport",
   "elev": 508
  },
+ "KMAF": {
+  "name": "Midland International Air and Space Port",
+  "city": "Midland",
+  "country": "US",
+  "iata": "MAF",
+  "lat": 31.942499,
+  "lon": -102.202003,
+  "type": "medium_airport",
+  "elev": 2871
+ },
+ "KMDD": {
+  "name": "Midland Airpark",
+  "city": "Midland",
+  "country": "US",
+  "iata": "MDD",
+  "lat": 32.0364990234,
+  "lon": -102.100997925,
+  "type": "small_airport",
+  "elev": 2803
+ },
  "KMFE": {
   "name": "McAllen Miller International Airport",
   "city": "McAllen",
@@ -78,6 +218,36 @@
   "lon": -98.237965,
   "type": "medium_airport",
   "elev": 107
+ },
+ "KNGP": {
+  "name": "Naval Air Station Corpus Christi Truax Field",
+  "city": "Corpus Christi",
+  "country": "US",
+  "iata": "NGP",
+  "lat": 27.6926,
+  "lon": -97.2911,
+  "type": "medium_airport",
+  "elev": 18
+ },
+ "KODO": {
+  "name": "Odessa Schlemeyer Field",
+  "city": "Odessa",
+  "country": "US",
+  "iata": "ODT",
+  "lat": 31.920601,
+  "lon": -102.387001,
+  "type": "small_airport",
+  "elev": 3004
+ },
+ "KPIL": {
+  "name": "Port Isabel Cameron County Airport",
+  "city": "Port Isabel",
+  "country": "US",
+  "iata": "",
+  "lat": 26.166201,
+  "lon": -97.345901,
+  "type": "small_airport",
+  "elev": 19
  },
  "KPWA": {
   "name": "Wiley Post Airport",
@@ -108,6 +278,26 @@
   "lon": -98.469803,
   "type": "large_airport",
   "elev": 809
+ },
+ "KSGR": {
+  "name": "Sugar Land Regional Airport",
+  "city": "Houston",
+  "country": "US",
+  "iata": "SGR",
+  "lat": 29.622299194336,
+  "lon": -95.65650177002,
+  "type": "medium_airport",
+  "elev": 82
+ },
+ "KT69": {
+  "name": "Alfred C 'Bubba' Thomas Airport",
+  "city": "Sinton",
+  "country": "US",
+  "iata": "",
+  "lat": 28.0392,
+  "lon": -97.542397,
+  "type": "small_airport",
+  "elev": 48
  },
  "KTXW": {
   "name": "Mid Valley International Airport",
@@ -169,6 +359,16 @@
   "type": "large_airport",
   "elev": 108
  },
+ "MMCV": {
+  "name": "General Pedro Jose Mendez International Airport",
+  "city": "Ciudad Victoria",
+  "country": "MX",
+  "iata": "CVM",
+  "lat": 23.7033,
+  "lon": -98.956497,
+  "type": "medium_airport",
+  "elev": 761
+ },
  "MMCY": {
   "name": "Captain Rogelio Castillo National Airport",
   "city": "Celaya",
@@ -178,6 +378,16 @@
   "lon": -100.886539,
   "type": "medium_airport",
   "elev": 5709
+ },
+ "MMDM": {
+  "name": "Ciudad Mante Los Huastecas National Airport",
+  "city": "Ciudad Mante",
+  "country": "MX",
+  "iata": "MMC",
+  "lat": 22.738957,
+  "lon": -99.018516,
+  "type": "small_airport",
+  "elev": 341
  },
  "MMDO": {
   "name": "General Guadalupe Victoria International Airport",
@@ -209,6 +419,16 @@
   "type": "large_airport",
   "elev": 5016
  },
+ "MMIO": {
+  "name": "Plan de Guadalupe International Airport",
+  "city": "Saltillo",
+  "country": "MX",
+  "iata": "SLW",
+  "lat": 25.53786,
+  "lon": -100.928346,
+  "type": "medium_airport",
+  "elev": 4778
+ },
  "MMLO": {
   "name": "Guanajuato International Airport",
   "city": "Silao",
@@ -239,6 +459,16 @@
   "type": "large_airport",
   "elev": 6033
  },
+ "MMMT": {
+  "name": "Minatitlán/Coatzacoalcos International Airport",
+  "city": "Cosoleacaque",
+  "country": "MX",
+  "iata": "MTT",
+  "lat": 18.103399,
+  "lon": -94.580704,
+  "type": "medium_airport",
+  "elev": 36
+ },
  "MMMV": {
   "name": "Monclova International Airport",
   "city": "Monclova",
@@ -268,6 +498,16 @@
   "lon": -106.264517,
   "type": "large_airport",
   "elev": 38
+ },
+ "MMNL": {
+  "name": "Quetzalcóatl International Airport",
+  "city": "Nuevo Laredo",
+  "country": "MX",
+  "iata": "NLD",
+  "lat": 27.443899,
+  "lon": -99.570503,
+  "type": "medium_airport",
+  "elev": 484
  },
  "MMOO": {
   "name": "Francisco Primo de Verdad y Ramos Airport",
@@ -359,6 +599,16 @@
   "type": "small_airport",
   "elev": 1300
  },
+ "MX-0203": {
+  "name": "Cedros Airport",
+  "city": "Mazapil",
+  "country": "MX",
+  "iata": "",
+  "lat": 24.6353,
+  "lon": -101.79655,
+  "type": "small_airport",
+  "elev": 5551
+ },
  "MX-0225": {
   "name": "Palula Airport",
   "city": "Real del Catorce",
@@ -398,6 +648,36 @@
   "lon": -101.12137,
   "type": "small_airport",
   "elev": null
+ },
+ "MX-1540": {
+  "name": "San Marcos del Tapado Airfield",
+  "city": "Concepción del Oro",
+  "country": "MX",
+  "iata": "",
+  "lat": 24.610991,
+  "lon": -101.36173,
+  "type": "small_airport",
+  "elev": 6096
+ },
+ "MX-2529": {
+  "name": "[DELETE] Cedros Mine",
+  "city": "",
+  "country": "MX",
+  "iata": "",
+  "lat": 23.489999,
+  "lon": -100.43,
+  "type": "small_airport",
+  "elev": 98
+ },
+ "TT46": {
+  "name": "PC Airport",
+  "city": "Bryan",
+  "country": "US",
+  "iata": "",
+  "lat": 30.804722,
+  "lon": -96.431111,
+  "type": "small_airport",
+  "elev": 399
  },
  "US-5806": {
   "name": "Alamo Aerial Applicators Airport",

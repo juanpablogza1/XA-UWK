@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>XA-UWK · Historial de vuelos</title>
+<title>XA-UWK · Vuelos</title>
 <meta name="theme-color" content="#0b1220">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -13,519 +13,644 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
 :root{
-  --bg:#0b1220; --card:#121b2e; --card2:#18233a; --line:#24314d;
-  --text:#e7ecf5; --mut:#8b98b3; --acc:#f5a524; --acc2:#3fb7ff; --ok:#3ddc97; --fh:150px;
+  --bg:#0b1220; --card:#121b2e; --card2:#18233a; --line:#24314d; --text:#e7ecf5; --mut:#8b98b3;
+  --acc:#f5a524; --acc2:#3fb7ff; --ok:#3ddc97; --bad:#ff8a7a;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 [hidden]{display:none!important}
-html,body{background:var(--bg);color:var(--text);font:15px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+html,body{height:100%;background:var(--bg);color:var(--text);font:15px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
 button,select,input{font:inherit;color:inherit}
-.wrap{max-width:600px;margin:0 auto;padding:0 12px 40px}
-header.top{display:flex;align-items:center;gap:12px;padding:calc(env(safe-area-inset-top) + 12px) 12px 8px;max-width:600px;margin:0 auto}
-.logo{width:42px;height:42px;border-radius:11px;background:linear-gradient(135deg,var(--acc),#e8590c);display:grid;place-items:center;flex:none}
-.logo svg{width:26px;height:26px;fill:#0b1220}
-h1{font-size:21px;letter-spacing:.5px;line-height:1.1}
-.sub{color:var(--mut);font-size:12.5px}
-.status{max-width:600px;margin:0 auto 8px;padding:0 12px;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mut)}
-.dot{width:9px;height:9px;border-radius:50%;background:var(--mut);flex:none}
-.dot.air{background:var(--ok);box-shadow:0 0 0 3px rgba(61,220,151,.2)}
-.status b{color:var(--text);font-weight:600}
+button{cursor:pointer}
+body{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
 
-.filters{position:sticky;top:0;z-index:1100;background:rgba(11,18,32,.96);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:8px 0 8px}
-.filters .in{max-width:600px;margin:0 auto;padding:0 12px}
-.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+/* encabezado */
+.hdr{flex:none;order:0;display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top) + 8px) 12px 8px;border-bottom:1px solid var(--line);background:var(--bg)}
+.logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--acc),#e8590c);display:grid;place-items:center;flex:none}
+.logo svg{width:22px;height:22px;fill:#0b1220}
+.hdr h1{font-size:18px;line-height:1.1;letter-spacing:.4px}
+.hdr .sub{font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdr .t{min-width:0}
+.hbtns{margin-left:auto;display:flex;gap:8px}
+.ibtn{width:38px;height:38px;border-radius:10px;background:var(--card2);border:1px solid var(--line);display:grid;place-items:center}
+.ibtn svg{width:19px;height:19px;fill:none;stroke:var(--text);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ibtn.busy svg{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* banner en vivo */
+.banner{flex:none;order:1;display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:0;background:linear-gradient(90deg,#0f5c43,#167a58);color:#fff;padding:9px 12px;animation:slide .3s ease-out}
+@keyframes slide{from{transform:translateY(-100%);opacity:0}}
+.banner .pulse{width:11px;height:11px;border-radius:50%;background:#7dffc7;flex:none;box-shadow:0 0 0 0 rgba(125,255,199,.7);animation:pulse 1.6s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 10px rgba(125,255,199,0)}100%{box-shadow:0 0 0 0 rgba(125,255,199,0)}}
+.banner .bt{flex:1;min-width:0}
+.banner b{display:block;font-size:14px;letter-spacing:.3px}
+.banner span{display:block;font-size:12.5px;opacity:.92;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.banner .go{font-size:13px;font-weight:600;background:rgba(255,255,255,.15);border-radius:8px;padding:5px 9px;flex:none}
+.toast{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top) + 64px);z-index:3000;background:#1d2a45;border:1px solid var(--line);color:var(--text);border-radius:10px;padding:8px 12px;font-size:13px;max-width:92vw;box-shadow:0 6px 24px rgba(0,0,0,.4)}
+
+/* pestanas */
+main{flex:1;order:2;position:relative;min-height:0}
+.tabs{flex:none;order:3;display:flex;background:#0e1626;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+.tabs button{flex:1;background:none;border:0;padding:8px 0 7px;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--mut);font-size:11.5px}
+.tabs button svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.tabs button.on{color:var(--acc)}
+.tab{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none}
+.tab.on{display:block}
+#tab-mapa{overflow:hidden}
+.pad{max-width:760px;margin:0 auto;padding:10px 12px 28px}
+
+/* filtros */
+.fbar{display:flex;flex-direction:column;gap:6px}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
 .chips::-webkit-scrollbar{display:none}
-.chips button{flex:none;background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13.5px;cursor:pointer;white-space:nowrap}
-.chips button.on{background:var(--acc);border-color:var(--acc);color:#0b1220;font-weight:600}
-.frow{display:flex;gap:8px;margin-top:7px}
-.frow select,.frow input{flex:1;min-width:0;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:14px}
-.frow label{flex:1;display:flex;flex-direction:column;font-size:11px;color:var(--mut);gap:3px}
-.summary{margin-top:7px;font-size:12.5px;color:var(--mut)}
-.summary b{color:var(--text);font-weight:600}
-.summary .clr{color:var(--acc2);cursor:pointer;margin-left:6px;text-decoration:underline}
-
-.layout{margin-top:12px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:12px}
-.card h2{font-size:12.5px;text-transform:uppercase;letter-spacing:1px;color:var(--mut);font-weight:600}
-.cardhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:8px}
-.cardhead span{font-size:12.5px;color:var(--text)}
-.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
-.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 4px;text-align:center}
-.kpi .v{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
-.kpi .l{font-size:10.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
-
-.mapwrap{position:relative}
-#map{height:360px;border-radius:10px;background:#0e1626}
+.chip{flex:none;background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:6px 11px;font-size:13px;white-space:nowrap}
+.chip.on{background:var(--acc);border-color:var(--acc);color:#0b1220;font-weight:600}
+.chip.ap.on{background:var(--acc2);border-color:var(--acc2)}
+.fsum{font-size:12.5px;color:var(--mut)}
+.fsum b{color:var(--text)}
+.mapbar{position:absolute;top:8px;left:8px;right:8px;z-index:500;pointer-events:none}
+.mapbar .chips,.mapbar .fsum{pointer-events:auto}
+.mapbar .chip{background:rgba(24,35,58,.94);box-shadow:0 2px 10px rgba(0,0,0,.35)}
+.mapbar .chip.on{background:var(--acc)}
+.mapbar .chip.ap.on{background:var(--acc2)}
+.mapbar .fsum{display:inline-block;background:rgba(11,18,32,.88);border-radius:8px;padding:4px 8px;margin-top:2px}
+#map{position:absolute;inset:0;background:#0e1626}
 .leaflet-container{background:#0e1626;font:inherit}
 .dark-tiles{filter:invert(1) hue-rotate(180deg) brightness(.9) contrast(.85) saturate(.5)}
 .aplabel{background:rgba(11,18,32,.85)!important;color:var(--text)!important;border:1px solid var(--line)!important;border-radius:6px!important;box-shadow:none!important;font-size:11px!important;font-weight:600;padding:1px 5px!important}
 .aplabel:before{display:none}
-.selbox{position:absolute;left:52px;right:8px;top:8px;z-index:900;background:rgba(18,27,46,.97);border:1px solid var(--acc);border-radius:10px;padding:8px 10px;font-size:13px;display:flex;gap:8px;align-items:center}
-.selbox .t{flex:1;min-width:0}
-.selbox .t b{font-size:15px}
-.selbox button{background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:5px 9px;font-size:12.5px;cursor:pointer}
-.legend{display:flex;gap:14px;font-size:12px;color:var(--mut);margin-top:8px;flex-wrap:wrap}
-.legend i{display:inline-block;width:22px;height:0;border-top:2px solid var(--acc2);vertical-align:middle;margin-right:5px}
+.planeic svg{width:32px;height:32px;fill:#3ddc97;stroke:#06281c;stroke-width:1;filter:drop-shadow(0 0 4px rgba(0,0,0,.9))}
+.legbtn{position:absolute;left:8px;bottom:14px;z-index:500;background:rgba(24,35,58,.94);border:1px solid var(--line);border-radius:8px;padding:5px 9px;font-size:12px;color:var(--mut)}
+.legend{position:absolute;left:8px;bottom:48px;z-index:500;background:rgba(18,27,46,.97);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:12px;color:var(--mut);line-height:1.9}
+.legend i{display:inline-block;width:24px;height:0;border-top:2.5px solid var(--acc2);vertical-align:middle;margin-right:6px}
 .legend i.d{border-top-style:dashed}
-.legend i.lo{border-top-color:#ff8a7a}
-.legend i.p{width:9px;height:9px;border:0;border-radius:50%;background:var(--acc)}
+.legend i.lo{border-top-color:var(--bad)}
+.legend i.l{border-top-color:var(--ok)}
+.legend i.s{border-top-color:var(--acc)}
+.legend i.p{width:9px;height:9px;border:0;border-radius:50%;background:var(--acc);margin:0 15px 0 7px}
 
-.bars{display:flex;align-items:flex-end;gap:3px;height:120px}
-.bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0;cursor:pointer;border-radius:6px}
+/* tarjetas y listas */
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:12px}
+.card h2{font-size:12.5px;text-transform:uppercase;letter-spacing:1px;color:var(--mut);font-weight:600;margin-bottom:8px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 4px;text-align:center}
+.kpi .v{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.kpi .l{font-size:10.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.search{width:100%;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-size:14px}
+.mhead{position:sticky;top:0;z-index:2;background:var(--bg);font-size:12.5px;color:var(--mut);padding:10px 2px 6px;display:flex;justify-content:space-between}
+.mhead b{color:var(--text)}
+.fl{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:7px;width:100%;text-align:left}
+.fl.sel{border-color:var(--acc)}
+.fl .d{width:38px;text-align:center;flex:none}
+.fl .d b{display:block;font-size:19px;line-height:1}
+.fl .d span{font-size:11px;color:var(--mut);text-transform:uppercase}
+.fl .r{flex:1;min-width:0}
+.fl .codes{font-size:16px;font-weight:700;letter-spacing:.3px;white-space:nowrap}
+.fl .codes em{font-style:normal;color:var(--mut);font-weight:400;margin:0 5px}
+.fl .cities{font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fl .tm{text-align:right;font-size:12.5px;color:var(--mut);flex:none;font-variant-numeric:tabular-nums}
+.fl .tm b{display:block;color:var(--text);font-size:13.5px;font-weight:600}
+.q{display:inline-block;font-size:10px;font-weight:700;border-radius:4px;padding:0 4px;margin-left:3px;vertical-align:2px;letter-spacing:0}
+.q.lo{background:var(--bad);color:#0b1220}
+.q.md{background:#ffcf70;color:#0b1220}
+.q.live{background:var(--ok);color:#0b1220}
+.empty{color:var(--mut);text-align:center;padding:22px 8px;font-size:14px}
+.more{display:block;width:100%;margin-top:6px;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:9px;color:var(--acc2)}
+
+/* resumen */
+.cal{display:flex;flex-direction:column;gap:3px}
+.crow{display:grid;grid-template-columns:34px repeat(31,minmax(0,1fr));gap:2px;align-items:center}
+.cal .ml{font-size:10.5px;color:var(--mut);text-transform:capitalize;cursor:pointer}
+.cal .c{display:block;width:100%;aspect-ratio:1;border-radius:2px;background:#16213a;border:0;padding:0;min-width:0}
+.cal .c.x{background:transparent;aspect-ratio:auto;height:1px}
+.cal .c.n1{background:#1f6fae}
+.cal .c.n2{background:#3fb7ff}
+.cal .c.n3{background:#a6e1ff}
+.cal .c.out{opacity:.35}
+.cal .c.nd{background:repeating-linear-gradient(45deg,#16213a 0 2px,#0b1220 2px 4px)}
+.calleg{display:flex;gap:10px;align-items:center;font-size:11px;color:var(--mut);margin-top:8px;flex-wrap:wrap}
+.calleg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.bars{display:flex;align-items:flex-end;gap:3px;height:130px}
+.bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0;background:none;border:0;padding:0}
 .bar i{display:block;width:100%;background:#2b4a6b;border-radius:4px 4px 0 0;min-height:2px}
 .bar.in i{background:var(--acc2)}
-.bar span{font-size:10px;color:var(--mut);margin-top:4px;white-space:nowrap}
+.bar span{font-size:10px;color:var(--mut);margin-top:4px;white-space:nowrap;text-transform:capitalize}
 .bar em{font-style:normal;font-size:10.5px;margin-bottom:2px}
-.hint{font-size:11.5px;color:var(--mut);margin-top:6px}
-
+.bar small{font-size:9.5px;color:var(--mut)}
+.hb{display:flex;align-items:center;gap:8px;padding:5px 0;width:100%;background:none;border:0;text-align:left}
+.hb .c{width:58px;font-weight:700;font-size:13.5px;flex:none}
+.hb .w{flex:1;min-width:0}
+.hb .w div{height:16px;border-radius:4px;background:var(--acc2);display:flex;overflow:hidden}
+.hb .w div s{display:block;height:100%;background:repeating-linear-gradient(45deg,#ff8a7a 0 3px,#c86a5e 3px 6px)}
+.hb .w small{display:block;font-size:11px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.hb .n{width:30px;text-align:right;font-weight:700;color:var(--acc)}
 ul.rank{list-style:none}
-ul.rank li{display:flex;align-items:center;gap:10px;padding:7px 2px;border-bottom:1px solid var(--line);font-size:14px;cursor:pointer}
+ul.rank li{display:flex;gap:10px;padding:7px 2px;border-bottom:1px solid var(--line);font-size:14px}
 ul.rank li:last-child{border:0}
-ul.rank li .c{font-weight:700;min-width:52px}
-ul.rank li .nm{flex:1;min-width:0;color:var(--mut);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ul.rank li .c{font-weight:700;white-space:nowrap}
+ul.rank li .nm{flex:1;min-width:0;color:var(--mut);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;align-self:center}
 ul.rank li .n{color:var(--acc);font-weight:700}
-ul.rank li .unc{color:#ff9b8a;font-size:11px}
-ul.rank li.on{background:rgba(245,165,36,.1)}
+.note{font-size:12.5px;color:var(--mut);line-height:1.5}
+.note b{color:var(--text)}
+.note a{color:var(--acc2)}
 
-.mhead{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.8px;margin:12px 2px 6px}
-.fl{background:var(--card2);border-radius:12px;padding:10px 12px;margin-bottom:8px;cursor:pointer;border:1px solid transparent}
-.fl.sel{border-color:var(--acc)}
-.fl .top{display:flex;justify-content:space-between;font-size:12px;color:var(--mut);margin-bottom:5px}
-.fl .rt{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px}
-.fl .ap{font-size:19px;font-weight:700;letter-spacing:.3px;min-width:0}
-.fl .ap small{display:block;font-size:11.5px;font-weight:400;color:var(--mut);letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.fl .r{text-align:right}
-.est{display:inline-block;font-size:10px;font-weight:600;color:#0b1220;background:#ffcf70;border-radius:4px;padding:0 4px;margin-left:4px;vertical-align:3px;letter-spacing:0}
-.est.lo{background:#ff9b8a}
-.est.hi{background:#3a4a66;color:var(--text)}
-.fl .mid{color:var(--acc);font-size:11.5px;text-align:center;white-space:nowrap}
-.fl .mid svg{width:20px;height:20px;fill:var(--acc);display:block;margin:0 auto;transform:rotate(90deg)}
-.fl .times{display:flex;justify-content:space-between;font-size:13px;margin-top:5px;font-variant-numeric:tabular-nums}
-.fl .more{display:none;margin-top:9px;padding-top:9px;border-top:1px solid var(--line);font-size:12.5px;color:var(--mut)}
-.fl.sel .more{display:block}
-.fl .more p{margin-bottom:6px}
-.fl .more b{color:var(--text)}
-a.btn,button.btn{display:inline-block;margin:4px 6px 0 0;padding:6px 10px;border-radius:8px;background:var(--card);color:var(--acc2);text-decoration:none;font-size:12.5px;border:1px solid var(--line);cursor:pointer}
-.empty{color:var(--mut);text-align:center;padding:18px 8px;font-size:14px}
-.foot{color:var(--mut);font-size:11.5px;text-align:center;margin-top:10px;line-height:1.5}
-.foot a{color:var(--acc2)}
-a.lnk{color:var(--acc2)}
+/* hoja inferior */
+.scrim{position:fixed;inset:0;z-index:1400;background:rgba(0,0,0,.35)}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:1500;background:var(--card);border-top:1px solid var(--line);border-radius:16px 16px 0 0;max-height:72dvh;overflow-y:auto;padding:6px 14px calc(14px + env(safe-area-inset-bottom));box-shadow:0 -10px 30px rgba(0,0,0,.45);animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(40%);opacity:0}}
+.grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:4px auto 8px}
+.shh{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
+.shh .tt{flex:1;min-width:0}
+.shh .tt b{font-size:16px;display:block}
+.shh .tt span{font-size:12.5px;color:var(--mut)}
+.x{background:var(--card2);border:1px solid var(--line);border-radius:8px;width:32px;height:32px;flex:none}
+.route{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;background:var(--card2);border-radius:12px;padding:12px}
+.rp{min-width:0}
+.rp .code{font-size:24px;font-weight:800;letter-spacing:.5px}
+.rp .city{font-size:12.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rp .tm{font-size:15px;font-weight:600;margin-top:4px;font-variant-numeric:tabular-nums}
+.rp .how{font-size:11px;margin-top:2px;color:var(--ok)}
+.rp .how.est{color:#ffcf70}
+.rp .how.lo{color:var(--bad)}
+.rp.r{text-align:right}
+.rmid{text-align:center;color:var(--acc);font-size:12px;white-space:nowrap}
+.rmid svg{width:22px;height:22px;fill:var(--acc);display:block;margin:2px auto;transform:rotate(90deg)}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.facts div{background:var(--card2);border-radius:9px;padding:7px;text-align:center}
+.facts b{display:block;font-size:15px;font-variant-numeric:tabular-nums}
+.facts span{font-size:10.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.4px}
+details{margin-top:10px;font-size:13px;color:var(--mut)}
+details summary{color:var(--acc2);cursor:pointer;margin-bottom:6px}
+details p{margin-bottom:6px}
+details b{color:var(--text)}
+.acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.btn{background:var(--card2);border:1px solid var(--line);border-radius:9px;padding:8px 11px;font-size:13px;color:var(--text);text-decoration:none;display:inline-block}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#0b1220;font-weight:600}
+.btn.on{background:var(--ok);border-color:var(--ok);color:#0b1220;font-weight:600}
+.btn.lnk{color:var(--acc2)}
+.btn[disabled]{opacity:.4}
+.aplist{margin-top:8px;max-height:42dvh;overflow:auto}
+.aplist button{display:flex;width:100%;gap:10px;align-items:center;background:none;border:0;border-bottom:1px solid var(--line);padding:9px 2px;text-align:left}
+.aplist button.on{background:rgba(63,183,255,.12)}
+.aplist .c{font-weight:700;width:62px;flex:none}
+.aplist .nm{flex:1;min-width:0;color:var(--mut);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aplist .n{color:var(--acc);font-weight:700}
+.drow{display:flex;gap:8px;margin-top:8px}
+.drow label{flex:1;display:flex;flex-direction:column;gap:3px;font-size:11.5px;color:var(--mut)}
+.drow input{background:var(--card2);border:1px solid var(--line);border-radius:9px;padding:8px;font-size:14px}
+.big4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+.big4 div{background:var(--card2);border-radius:9px;padding:8px 4px;text-align:center}
+.big4 b{display:block;font-size:17px;font-variant-numeric:tabular-nums}
+.big4 span{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.4px}
+.sec{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.8px;margin:12px 0 4px}
+.cfg ol{padding-left:18px;margin:6px 0 10px}
+.cfg li{font-size:13px;color:var(--mut);margin-bottom:5px}
+.cfg li b{color:var(--text)}
+.cfg input{width:100%;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:14px;margin:6px 0}
 
-.hbtns{margin-left:auto;display:flex;gap:8px}
-.ibtn{width:40px;height:40px;border-radius:11px;background:var(--card2);border:1px solid var(--line);display:grid;place-items:center;cursor:pointer}
-.ibtn svg{width:20px;height:20px;fill:none;stroke:var(--text);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.ibtn.busy svg{animation:spin 1s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.updmsg{max-width:600px;margin:0 auto 8px;padding:0 12px;font-size:12.5px;color:var(--acc2)}
-.live{border-color:var(--ok)}
-.live .lh{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.live .tag{background:var(--ok);color:#0b1220;font-weight:700;font-size:11px;border-radius:5px;padding:2px 6px;letter-spacing:.5px}
-.live .tag.off{background:var(--mut)}
-.live .tag.blink{animation:blink 1.6s infinite}
-@keyframes blink{50%{opacity:.45}}
-.live .ago{font-size:12px;color:var(--mut);margin-left:auto}
-.live .big{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:6px 0}
-.live .big div{background:var(--card2);border-radius:9px;padding:7px 4px;text-align:center}
-.live .big b{display:block;font-size:16px;font-variant-numeric:tabular-nums}
-.live .big span{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.4px}
-.live p{font-size:13px;color:var(--mut);margin-top:4px}
-.live p b{color:var(--text)}
-.live .acts{margin-top:6px}
-button.btn.on{background:var(--ok);color:#0b1220;border-color:var(--ok)}
-.planeic svg{width:30px;height:30px;fill:#3ddc97;stroke:#0b1220;stroke-width:1;filter:drop-shadow(0 0 3px rgba(0,0,0,.8))}
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000;display:flex;align-items:flex-end;justify-content:center}
-.modal{background:var(--card);border:1px solid var(--line);border-radius:16px 16px 0 0;width:100%;max-width:600px;padding:16px 16px calc(16px + env(safe-area-inset-bottom));max-height:90vh;overflow:auto}
-.modal h3{font-size:16px;margin-bottom:6px}
-.modal p,.modal li{font-size:13px;color:var(--mut);margin-bottom:6px}
-.modal ol{padding-left:18px;margin:6px 0 10px}
-.modal b{color:var(--text)}
-.modal input{width:100%;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:14px;margin:6px 0}
-.modal .msg{font-size:13px;margin-top:6px;min-height:18px}
-@media (min-width:700px){.overlay{align-items:center}.modal{border-radius:16px}}
-
-@media (min-width:980px){
-  header.top,.status,.filters .in,.updmsg{max-width:1280px}
-  .wrap{max-width:1280px}
-  .layout{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:14px;align-items:start}
-  .left{position:sticky;top:calc(var(--fh) + 12px)}
-  #map{height:calc(100vh - var(--fh) - 330px);min-height:360px}
+@media (min-width:900px){
+  .tabs{order:1;border-top:0;border-bottom:1px solid var(--line);padding:0 12px;justify-content:flex-start;gap:4px}
+  .tabs button{flex:none;flex-direction:row;gap:7px;padding:10px 16px;font-size:14px;border-bottom:2px solid transparent}
+  .tabs button.on{border-bottom-color:var(--acc)}
+  .banner{order:0}
+  .hdr{order:-1}
+  .sheet{left:auto;right:16px;bottom:16px;width:420px;border-radius:16px;border:1px solid var(--line);max-height:calc(100dvh - 140px)}
+  .scrim{background:transparent;pointer-events:none}
 }
 </style>
 </head>
 <body>
-<header class="top">
+<header class="hdr">
   <div class="logo"><svg viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg></div>
-  <div>
+  <div class="t">
     <h1>XA-UWK</h1>
-    <div class="sub">Pilatus PC-12 · Mode S 0D0929 · MSN 1534</div>
+    <div class="sub" id="sub">Pilatus PC-12 · base Del Norte, Monterrey</div>
   </div>
   <div class="hbtns">
     <button class="ibtn" id="btnUpd" title="Actualizar ahora" aria-label="Actualizar ahora"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>
-    <button class="ibtn" id="btnCfg" title="Ajustes" aria-label="Ajustes"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+    <button class="ibtn" id="btnCfg" title="Ajustes y datos" aria-label="Ajustes"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
   </div>
 </header>
-<div class="status" id="status"><span class="dot"></span><span>Cargando…</span></div>
-<div class="updmsg" id="updmsg" hidden></div>
 
-<div class="filters" id="filters"><div class="in">
-  <div class="chips" id="periods">
-    <button data-p="7">7 días</button>
-    <button data-p="30">30 días</button>
-    <button data-p="90">90 días</button>
-    <button data-p="365" class="on">12 meses</button>
-    <button data-p="all">Todo</button>
-    <button data-p="custom">Fechas…</button>
-  </div>
-  <div class="frow" id="customRow" hidden>
-    <label>Desde<input type="date" id="dFrom"></label>
-    <label>Hasta<input type="date" id="dTo"></label>
-  </div>
-  <div class="frow"><select id="apSel"><option value="">Todos los aeropuertos</option></select></div>
-  <div class="summary" id="summary"></div>
-</div></div>
+<button class="banner" id="banner" hidden>
+  <span class="pulse"></span>
+  <span class="bt"><b id="bTitle">EN VUELO AHORA</b><span id="bText"></span></span>
+  <span class="go">Ver</span>
+</button>
 
-<div class="wrap">
-  <div class="layout">
-    <div class="left">
-      <div class="card live" id="liveCard" hidden></div>
+<main>
+  <section class="tab on" id="tab-mapa">
+    <div id="map"></div>
+    <div class="mapbar"><div class="fbar" data-fbar></div></div>
+    <button class="legbtn" id="legBtn">Leyenda</button>
+    <div class="legend" id="legend" hidden>
+      <div><i></i>Trayectoria observada</div>
+      <div><i class="d"></i>Tramo sin señal (estimado)</div>
+      <div><i class="d lo"></i>Estimado, confianza baja</div>
+      <div><i class="s"></i>Vuelo seleccionado</div>
+      <div><i class="l"></i>En vivo / hoy</div>
+      <div><i class="p"></i>Aeropuerto (tamaño = operaciones)</div>
+    </div>
+  </section>
+
+  <section class="tab" id="tab-vuelos">
+    <div class="pad">
+      <div class="fbar" data-fbar></div>
+      <input class="search" id="q" type="search" placeholder="Buscar aeropuerto o ciudad (ej. Tampico, KBRO)" style="margin-top:8px">
+      <div id="todayBox"></div>
+      <div id="list"></div>
+    </div>
+  </section>
+
+  <section class="tab" id="tab-resumen">
+    <div class="pad">
+      <div class="fbar" data-fbar></div>
       <div class="kpis">
         <div class="kpi"><div class="v" id="k1">0</div><div class="l">Vuelos</div></div>
         <div class="kpi"><div class="v" id="k2">0</div><div class="l">Horas</div></div>
         <div class="kpi"><div class="v" id="k3">0</div><div class="l">Km</div></div>
-        <div class="kpi"><div class="v" id="k4">0</div><div class="l">Aeropuertos</div></div>
+        <div class="kpi"><div class="v" id="k4">0</div><div class="l">Destinos</div></div>
       </div>
-      <div class="card">
-        <div class="cardhead"><h2>Mapa</h2><span id="mapPeriod"></span></div>
-        <div class="mapwrap">
-          <div id="map"></div>
-          <div class="selbox" id="selbox" hidden></div>
-        </div>
-        <div class="legend"><span><i></i>Trayectoria observada</span><span><i class="d"></i>Sin cobertura (estimado)</span><span><i class="d lo"></i>Estimado, confianza baja</span><span><i class="p"></i>Aeropuerto</span></div>
-      </div>
-      <div class="card">
-        <div class="cardhead"><h2>Vuelos por mes</h2><span id="barsNote"></span></div>
-        <div class="bars" id="bars"></div>
-        <div class="hint">Toca un mes para ver solo ese mes.</div>
-      </div>
+      <div class="card"><h2>Días con vuelos · últimos 12 meses</h2><div class="cal" id="cal"></div>
+        <div class="calleg"><span><i style="background:#16213a"></i>sin vuelos</span><span><i style="background:#1f6fae"></i>1</span><span><i style="background:#3fb7ff"></i>2</span><span><i style="background:#a6e1ff"></i>3+</span><span><i style="background:repeating-linear-gradient(45deg,#16213a 0 2px,#0b1220 2px 4px)"></i>sin datos</span></div>
+        <div class="note" style="margin-top:6px">Toca un día para ver sus vuelos o un mes para filtrarlo.</div></div>
+      <div class="card"><h2>Vuelos por mes · últimos 12 meses</h2><div class="bars" id="bars"></div></div>
+      <div class="card"><h2>Destinos del periodo</h2><div id="hbars"></div>
+        <div class="note" style="margin-top:6px"><span style="display:inline-block;width:14px;height:9px;background:repeating-linear-gradient(45deg,#ff8a7a 0 3px,#c86a5e 3px 6px);border-radius:2px;vertical-align:0"></span> parte estimada con confianza baja</div></div>
+      <div class="card"><h2>Rutas frecuentes</h2><ul class="rank" id="routes"></ul></div>
+      <div class="card"><h2>Sobre los datos</h2><div class="note" id="dataNote"></div></div>
     </div>
-    <div class="right">
-      <div class="card" id="todayCard" hidden>
-        <div class="cardhead"><h2>Hoy</h2><span id="todayNote">seguimiento en vivo</span></div>
-        <div id="todayList"></div>
-      </div>
-      <div class="card">
-        <div class="cardhead"><h2>Aeropuertos</h2><span>operaciones</span></div>
-        <ul class="rank" id="aps"></ul>
-      </div>
-      <div class="card">
-        <div class="cardhead"><h2>Rutas frecuentes</h2></div>
-        <ul class="rank" id="routes"></ul>
-      </div>
-      <div class="card">
-        <div class="cardhead"><h2 id="listTitle">Vuelos</h2><span>hora de Monterrey</span></div>
-        <div id="list"></div>
-      </div>
-      <div class="foot" id="foot"></div>
-    </div>
-  </div>
-</div>
+  </section>
+</main>
 
-<div class="overlay" id="cfg" hidden><div class="modal">
-  <h3>Actualizar y seguir en vivo desde la app</h3>
-  <p id="cfgWhy">Para que los botones lancen los procesos de GitHub se necesita un token de tu cuenta. Se guarda solo en este dispositivo.</p>
-  <ol>
-    <li>Abre <a class="lnk" href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com → Fine-grained token nuevo</a>.</li>
-    <li><b>Repository access:</b> Only select repositories → <b>XA-UWK</b>.</li>
-    <li><b>Permissions → Repository:</b> <b>Actions: Read and write</b> y <b>Contents: Read-only</b>.</li>
-    <li>Genera el token, cópialo y pégalo aquí.</li>
-  </ol>
-  <input id="tokIn" type="password" placeholder="github_pat_…" autocomplete="off" autocapitalize="off" spellcheck="false">
-  <button class="btn" id="tokSave">Guardar y probar</button>
-  <button class="btn" id="tokDel">Borrar token</button>
-  <button class="btn" id="cfgClose">Cerrar</button>
-  <div class="msg" id="tokMsg"></div>
-</div></div>
+<nav class="tabs" id="tabs">
+  <button data-tab="mapa" class="on"><svg viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg>Mapa</button>
+  <button data-tab="vuelos"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/></svg>Vuelos</button>
+  <button data-tab="resumen"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Resumen</button>
+</nav>
+
+<div class="scrim" id="scrim" hidden></div>
+<div class="sheet" id="sheet" hidden></div>
+<div class="toast" id="toast" hidden></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 "use strict";
+/* ================= utilidades ================= */
 const TZ = "America/Monterrey";
 const fDay = new Intl.DateTimeFormat("en-CA",{timeZone:TZ,year:"numeric",month:"2-digit",day:"2-digit"});
-const fDate = new Intl.DateTimeFormat("es-MX",{timeZone:TZ,weekday:"short",day:"numeric",month:"short"});
-const fDateY = new Intl.DateTimeFormat("es-MX",{timeZone:TZ,day:"numeric",month:"short",year:"numeric"});
+const fDateL = new Intl.DateTimeFormat("es-MX",{timeZone:TZ,weekday:"long",day:"numeric",month:"long",year:"numeric"});
+const fWd = new Intl.DateTimeFormat("es-MX",{timeZone:TZ,weekday:"short"});
+const fDnum = new Intl.DateTimeFormat("es-MX",{timeZone:TZ,day:"numeric"});
 const fTime = new Intl.DateTimeFormat("es-MX",{timeZone:TZ,hour:"2-digit",minute:"2-digit",hour12:false});
 const fMonth = new Intl.DateTimeFormat("es-MX",{timeZone:"UTC",month:"long",year:"numeric"});
 const fMon = new Intl.DateTimeFormat("es-MX",{timeZone:"UTC",month:"short"});
 const fKey = new Intl.DateTimeFormat("es-MX",{timeZone:"UTC",day:"numeric",month:"short",year:"numeric"});
+const fKeyL = new Intl.DateTimeFormat("es-MX",{timeZone:"UTC",weekday:"long",day:"numeric",month:"long",year:"numeric"});
 const CARD = {N:"norte",NE:"noreste",E:"este",SE:"sureste",S:"sur",SO:"suroeste",O:"oeste",NO:"noroeste"};
-const esc = s => String(s ?? "").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const dayKey = t => fDay.format(new Date(t*1000));
-const keyDate = k => { const [y,m,d]=k.split("-").map(Number); return new Date(Date.UTC(y,m-1,d)); };
-const addDays = (k,n) => { const d=keyDate(k); d.setUTCDate(d.getUTCDate()+n); return d.toISOString().slice(0,10); };
-const fmtKey = k => fKey.format(keyDate(k)).replace(/\./g,"");
 const nf = new Intl.NumberFormat("es-MX");
-const dur = s => { s=Math.max(0,s); const h=Math.floor(s/3600), m=Math.round((s%3600)/60); return h? `${h} h ${String(m).padStart(2,"0")} min` : `${m} min`; };
-const conf = c => c>=.8 ? "alta" : c>=.5 ? "media" : "baja";
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const dayKey = t => fDay.format(new Date(t*1000));
+const keyDate = k => { const [y,m,d] = k.split("-").map(Number); return new Date(Date.UTC(y,m-1,d)); };
+const addDays = (k,n) => { const d = keyDate(k); d.setUTCDate(d.getUTCDate()+n); return d.toISOString().slice(0,10); };
+const monthEnd = m => addDays(addDays(m+"-01",40).slice(0,7)+"-01",-1);
+const fmtKey = k => fKey.format(keyDate(k)).replace(/\./g,"");
+const tm = t => fTime.format(new Date(t*1000));
+const dur = s => { s = Math.max(0,s); const h = Math.floor(s/3600), m = Math.round((s%3600)/60); return h ? `${h} h ${String(m).padStart(2,"0")}` : `${m} min`; };
+const conf = c => c >= .8 ? "alta" : c >= .5 ? "media" : "baja";
+const PLANE = '<path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/>';
+const nowS = () => Date.now()/1000;
+const cap = s => s ? s[0].toUpperCase() + s.slice(1) : s;
 
-let FL=[], AP={}, META={}, LIVE={};
-const S = {p:"365", from:null, to:null, ap:"", sel:null, shown:40};
-let map, layerF, layerA, layerL, flightLayers = new Map();
+/* ================= estado ================= */
+let FL = [], AP = {}, META = {}, LIVE = {}, DAYS = {}, LV = null;
+const S = {p:"90", from:null, to:null, ap:"", q:"", tab:"mapa", sel:null, follow:false, shown:60};
+let map, layerF, layerA, layerL, flightLayers = new Map(), sheetKind = null, sheetArg = null;
 
 async function getJSON(p, def){
-  try{ const r = await fetch(p+"?v="+Date.now(),{cache:"no-store"}); if(!r.ok) throw 0; return await r.json(); }
+  try { const r = await fetch(p + "?v=" + Date.now(), {cache:"no-store"}); if (!r.ok) throw 0; return await r.json(); }
   catch(e){ return def; }
 }
-const apName = c => { const a = AP[c]; return a ? (a.city || a.name) : ""; };
-const apFull = c => { const a = AP[c]; return a ? `${a.name}${a.city && !a.name.includes(a.city) ? ", "+a.city : ""}` : c; };
+const apOf = c => AP[c] || (LV && LV.airports && LV.airports[c]) || null;
+const apName = c => { const a = apOf(c); return a ? (a.city || a.name) : ""; };
+const apFull = c => { const a = apOf(c); return a ? `${a.name}${a.city && !a.name.includes(a.city) ? ", "+a.city : ""}` : (c || ""); };
+const est = (f, s) => f[s] && f[s+"M"] !== "tierra";
+const low = (f, s) => !f[s] || (est(f,s) && f[s+"C"] < .5);
 
-/* ---------- periodo ---------- */
+/* ================= filtros ================= */
+const PERIODS = [["7","7 días"],["30","30 días"],["90","90 días"],["365","1 año"],["all","Todo"]];
 function range(){
-  const today = dayKey(Date.now()/1000);
+  const today = dayKey(nowS());
   if (S.p === "custom" && S.from && S.to) return S.from <= S.to ? [S.from, S.to] : [S.to, S.from];
   if (S.p === "all") return [FL.length ? dayKey(FL[FL.length-1].off) : today, today];
-  const n = Number(S.p) || 365;
-  return [addDays(today, -(n-1)), today];
+  return [addDays(today, -(Number(S.p) - 1)), today];
 }
-function inAp(f){ return !S.ap || f.dep === S.ap || f.arr === S.ap; }
-function filtered(){
+const inAp = f => !S.ap || f.dep === S.ap || f.arr === S.ap;
+function matchQ(f){
+  if (!S.q) return true;
+  const q = S.q.toLowerCase();
+  return [f.dep, f.arr].some(c => c && [c, apFull(c), (apOf(c)||{}).iata].some(v => v && String(v).toLowerCase().includes(q)));
+}
+function filtered(useQ){
   const [a,b] = range();
-  return FL.filter(f => { const k = dayKey(f.off); return k >= a && k <= b && inAp(f); });
+  return FL.filter(f => { const k = dayKey(f.off); return k >= a && k <= b && inAp(f) && (!useQ || matchQ(f)); });
+}
+function periodLabel(){ const [a,b] = range(); return a === b ? fmtKey(a) : `${fmtKey(a)} – ${fmtKey(b)}`; }
+function drawFilterBars(list){
+  const hrs = list.reduce((s,f) => s + Math.max(0, f.on - f.off), 0)/3600;
+  const chips = PERIODS.map(([v,l]) => `<button class="chip${S.p===v?" on":""}" data-p="${v}">${l}</button>`).join("") +
+    `<button class="chip${S.p==="custom"?" on":""}" data-act="dates">${S.p==="custom" ? esc(periodLabel()) : "Fechas…"}</button>`;
+  const apc = `<button class="chip ap${S.ap?" on":""}" data-act="aps">${S.ap ? "✈ "+esc(S.ap)+" ✕" : "✈ Aeropuerto"}</button>`;
+  const html = `<div class="chips">${apc}${chips}</div>
+    <div><span class="fsum"><b>${esc(periodLabel())}</b> · <b>${list.length}</b> vuelo${list.length===1?"":"s"} · ${hrs.toFixed(hrs<100?1:0)} h${S.ap ? ` · solo <b>${esc(S.ap)}</b> ${esc(apName(S.ap))}` : ""}</span></div>`;
+  document.querySelectorAll("[data-fbar]").forEach(el => el.innerHTML = html);
 }
 
-/* ---------- mapa ---------- */
+/* ================= mapa ================= */
 function initMap(){
   if (!window.L){ document.getElementById("map").innerHTML = '<div class="empty">Mapa no disponible sin conexión</div>'; return; }
-  map = L.map("map",{preferCanvas:true, zoomControl:true, attributionControl:true, worldCopyJump:true}).setView([27,-99],5);
+  map = L.map("map",{preferCanvas:true, zoomControl:false, attributionControl:true, worldCopyJump:true}).setView([26,-99],5);
+  L.control.zoom({position:"bottomright"}).addTo(map);
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:16,
     attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>', className:"dark-tiles"}).addTo(map);
-  layerF = L.layerGroup().addTo(map);
-  layerA = L.layerGroup().addTo(map);
-  layerL = L.layerGroup().addTo(map);
+  layerF = L.layerGroup().addTo(map); layerA = L.layerGroup().addTo(map); layerL = L.layerGroup().addTo(map);
+  map.on("click", () => { if (sheetKind === "flight") closeSheet(); });
+  map.on("dragstart", () => { if (S.follow){ S.follow = false; if (sheetKind === "live") renderSheet(); } });
 }
 function parts(f){
-  const dep = AP[f.dep], arr = AP[f.arr], segs = (f.segs||[]).filter(s => s.length);
+  const dep = AP[f.dep], arr = AP[f.arr], segs = (f.segs || []).filter(s => s.length);
   const out = [];
-  if (!segs.length){
-    if (dep && arr) out.push({pts:[[dep.lat,dep.lon],[arr.lat,arr.lon]], dash:true});
-    return out;
-  }
-  const first = segs[0][0], last = segs[segs.length-1][segs[segs.length-1].length-1];
-  if (dep) out.push({pts:[[dep.lat,dep.lon], first], dash:f.depM !== "tierra", low:f.depM !== "tierra" && f.depC < .5});
-  segs.forEach((s,i) => {
-    out.push({pts:s, dash:false});
-    if (i < segs.length-1) out.push({pts:[s[s.length-1], segs[i+1][0]], dash:true});
-  });
-  if (arr) out.push({pts:[last,[arr.lat,arr.lon]], dash:f.arrM !== "tierra", low:f.arrM !== "tierra" && f.arrC < .5});
+  if (!segs.length){ if (dep && arr) out.push({pts:[[dep.lat,dep.lon],[arr.lat,arr.lon]], dash:true, low:true}); return out; }
+  const first = segs[0][0], lastS = segs[segs.length-1], last = lastS[lastS.length-1];
+  if (dep) out.push({pts:[[dep.lat,dep.lon], first], dash:est(f,"dep"), low:est(f,"dep") && f.depC < .5});
+  segs.forEach((s,i) => { out.push({pts:s, dash:false}); if (i < segs.length-1) out.push({pts:[s[s.length-1], segs[i+1][0]], dash:true}); });
+  if (arr) out.push({pts:[last,[arr.lat,arr.lon]], dash:est(f,"arr"), low:est(f,"arr") && f.arrC < .5});
   return out;
 }
 function drawMap(list, fit){
   if (!map) return;
   layerF.clearLayers(); layerA.clearLayers(); flightLayers.clear();
   const bounds = L.latLngBounds([]);
-  for (const f of list){
+  [...list].reverse().forEach(f => {
     const g = L.featureGroup();
-    for (const p of parts(f)){
-      const pl = L.polyline(p.pts,{color: p.low ? "#ff8a7a" : "#3fb7ff", weight:2, opacity:.6, dashArray:p.dash ? "3 6" : null});
-      pl.options.base = p.low ? "#ff8a7a" : "#3fb7ff";
-      pl.on("click", () => select(f.id, "map"));
-      g.addLayer(pl);
-      p.pts.forEach(x => bounds.extend(x));
-    }
+    parts(f).forEach(p => {
+      const base = p.low ? "#ff8a7a" : "#3fb7ff";
+      const pl = L.polyline(p.pts, {color:base, weight:2.2, opacity:.6, dashArray:p.dash ? "3 6" : null});
+      pl.options.base = base;
+      pl.on("click", e => { L.DomEvent.stopPropagation(e); openFlight(f.id, "map"); });
+      g.addLayer(pl); p.pts.forEach(x => bounds.extend(x));
+    });
     g.addTo(layerF); flightLayers.set(f.id, g);
-  }
+  });
   const ops = {};
-  list.forEach(f => [f.dep,f.arr].forEach(c => { if (c) ops[c] = (ops[c]||0)+1; }));
-  const ranked = Object.entries(ops).sort((a,b) => b[1]-a[1]);
-  ranked.forEach(([c,n],i) => {
+  list.forEach(f => [f.dep,f.arr].forEach(c => { if (c) ops[c] = (ops[c]||0) + 1; }));
+  Object.entries(ops).sort((a,b) => b[1]-a[1]).forEach(([c,n],i) => {
     const a = AP[c]; if (!a) return;
     bounds.extend([a.lat,a.lon]);
-    const m = L.circleMarker([a.lat,a.lon],{radius:4+Math.min(7,Math.sqrt(n)), color:"#0b1220", weight:1.5, fillColor:"#f5a524", fillOpacity:1});
-    m.bindTooltip(esc(c),{permanent: i < 10, direction:"right", offset:[6,0], className:"aplabel"});
-    m.bindPopup(`<b>${esc(c)}</b>${a.iata ? " · "+esc(a.iata) : ""}<br>${esc(apFull(c))}<br>${n} operaciones en el periodo<br><a href="#" data-ap="${esc(c)}">Filtrar este aeropuerto</a>`);
+    const m = L.circleMarker([a.lat,a.lon],{radius:5+Math.min(9,Math.sqrt(n)*1.4), color:"#0b1220", weight:1.5, fillColor:S.ap===c ? "#3fb7ff" : "#f5a524", fillOpacity:1});
+    m.bindTooltip(esc(c),{permanent: i < 8, direction:"right", offset:[7,0], className:"aplabel"});
+    m.on("click", e => { L.DomEvent.stopPropagation(e); openSheet("airport", c); });
     m.addTo(layerA);
   });
-  styleFlights();
-  if (fit !== false && bounds.isValid()) map.fitBounds(bounds,{padding:[24,24], maxZoom:9});
+  styleSel();
+  if (fit !== false && bounds.isValid()) map.fitBounds(bounds,{paddingTopLeft:[20,90], paddingBottomRight:[20,30], maxZoom:9});
 }
-function styleFlights(){
+function styleSel(){
   for (const [id,g] of flightLayers){
     const on = S.sel === id, dim = S.sel !== null && !on;
-    g.eachLayer(l => l.setStyle({color: on ? "#f5a524" : l.options.base, weight: on ? 4 : 2, opacity: dim ? .1 : on ? 1 : .6}));
+    g.eachLayer(l => l.setStyle({color: on ? "#f5a524" : l.options.base, weight: on ? 4.5 : 2.2, opacity: dim ? .1 : on ? 1 : .6}));
     if (on) g.bringToFront();
   }
 }
+function focusFlight(id){
+  const g = flightLayers.get(id);
+  if (g && map) map.fitBounds(g.getBounds(),{paddingTopLeft:[30,90], paddingBottomRight:[30, Math.round(window.innerHeight*.45)], maxZoom:10});
+}
 
-/* ---------- vistas ---------- */
-function explain(f, side){
-  const m = f[side+"M"], c = f[side], x = f[side+"X"], gap = f[side+"Gap"], k = f[side+"C"];
-  const lab = side === "dep" ? "Origen" : "Destino";
-  if (!c) return `<p><b>${lab}:</b> desconocido.</p>`;
-  const nm = `${esc(c)} (${esc(apFull(c))})`;
-  if (m === "tierra") return `<p><b>${lab}:</b> ${nm}. Observado en tierra.</p>`;
-  const where = !x ? "" : x[0] < 1.5 ? `a ${nf.format(x[1])} ft sobre ${esc(c)}`
-      : `a ${nf.format(x[1])} ft, ${Math.round(x[0])} nm al ${CARD[x[2]]||x[2]} de ${esc(c)}`;
-  let why;
-  if (m === "escala") why = side === "arr"
-      ? `la señal se perdió descendiendo ${where} y el avión reapareció despegando de ahí ${gap} min después`
-      : `el avión reapareció ascendiendo ${where}, ${gap} min después de perder la señal al llegar`;
-  else if (m === "secuencia") why = side === "arr"
-      ? `la señal se perdió ${where}; coincide con el origen del vuelo siguiente`
-      : `apareció ${where}; coincide con el destino del vuelo anterior`;
-  else why = side === "arr"
-      ? `estimado por rumbo y descenso: la señal se perdió ${where}`
-      : `estimado por rumbo y ascenso: apareció ${where}`;
-  const alts = (f[side+"Alt"]||[]).map(([c2,pr]) => `${esc(c2)} (${esc(apName(c2)||c2)}, ${Math.round(pr*100)}%)`).join(", ");
-  return `<p><b>${lab}:</b> ${nm}. Sin cobertura ADS-B ${side==="arr"?"al aterrizar":"al despegar"}; ${why}. Confianza ${conf(k)} (${Math.round(k*100)}%).${alts ? " Otras opciones: "+alts+"." : ""}</p>`;
+/* ================= lista ================= */
+function badge(f, s){
+  if (!f[s]) return '<span class="q lo">?</span>';
+  if (!est(f,s)) return "";
+  const c = f[s+"C"];
+  return c >= .8 ? "" : c >= .5 ? '<span class="q md">est.</span>' : '<span class="q lo">¿?</span>';
 }
-function badge(f, side){
-  if (!f[side] || f[side+"M"] === "tierra") return "";
-  const c = f[side+"C"];
-  return `<span class="est ${c >= .8 ? "hi" : c >= .5 ? "" : "lo"}" title="Estimado · confianza ${conf(c)}">${c >= .8 ? "≈" : c >= .5 ? "est." : "¿?"}</span>`;
+function rowHTML(f){
+  const d = new Date(f.off*1000);
+  return `<button class="fl${S.sel===f.id?" sel":""}" data-id="${f.id}">
+    <div class="d"><b>${esc(fDnum.format(d))}</b><span>${esc(fWd.format(d).replace(".",""))}</span></div>
+    <div class="r"><div class="codes">${esc(f.dep||"????")}${badge(f,"dep")}<em>→</em>${esc(f.arr||"????")}${badge(f,"arr")}</div>
+      <div class="cities">${esc(apName(f.dep)||"desconocido")} → ${esc(apName(f.arr)||"desconocido")}</div></div>
+    <div class="tm"><b>${f.offE?"≈":""}${tm(f.off)}</b>${dur(f.on-f.off)}</div></button>`;
 }
-function flightHTML(f){
-  const day = new Date(f.off*1000).toISOString().slice(0,10);
-  return `<div class="fl${S.sel===f.id?" sel":""}" data-id="${f.id}">
-    <div class="top"><span>${esc(fDate.format(new Date(f.off*1000)))}</span><span>${dur(f.on-f.off)} · ${nf.format(Math.round(f.nm*1.852))} km${f.open?" · en curso":""}</span></div>
-    <div class="rt">
-      <div class="ap">${esc(f.dep||"????")}${badge(f,"dep")}<small>${esc(apName(f.dep)||"Desconocido")}</small></div>
-      <div class="mid"><svg viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg></div>
-      <div class="ap r">${esc(f.arr||"????")}${badge(f,"arr")}<small>${esc(apName(f.arr)||"Desconocido")}</small></div>
-    </div>
-    <div class="times"><span>Despegue ${f.offE?"≈":""}${fTime.format(new Date(f.off*1000))}</span><span>Aterrizaje ${f.onE?"≈":""}${fTime.format(new Date(f.on*1000))}</span></div>
-    <div class="more">
-      ${explain(f,"dep")}${explain(f,"arr")}
-      <p>Altitud máxima: ${f.alt ? nf.format(f.alt)+" ft" : "—"}. Visto por ADS-B de ${fTime.format(new Date(f.seen[0]*1000))} a ${fTime.format(new Date(f.seen[1]*1000))}.</p>
-      <a class="btn" href="https://globe.adsbexchange.com/?icao=0d0929&showTrace=${day}" target="_blank" rel="noopener">Ver en ADS-B Exchange</a>
-      <a class="btn" href="https://adsb.lol/?icao=0d0929&showTrace=${day}" target="_blank" rel="noopener">Ver en adsb.lol</a>
-    </div></div>`;
-}
-function drawList(list){
-  const el = document.getElementById("list");
-  document.getElementById("listTitle").textContent = `Vuelos (${list.length})`;
-  if (!FL.length){ el.innerHTML = '<div class="empty">Aún no hay datos. El proceso de GitHub Actions los carga automáticamente.</div>'; return; }
-  if (!list.length){ el.innerHTML = '<div class="empty">No hay vuelos con estos filtros.</div>'; return; }
+function drawList(){
+  const list = filtered(true), el = document.getElementById("list");
+  if (!FL.length){ el.innerHTML = '<div class="empty">Aún no hay datos.</div>'; return; }
+  if (!list.length){ el.innerHTML = `<div class="empty">No hay vuelos con estos filtros.${S.q ? "<br>No hay vuelos a o desde “"+esc(S.q)+"” en el periodo." : ""}</div>`; return; }
   let html = "", lastM = "";
   list.slice(0, S.shown).forEach(f => {
     const k = dayKey(f.off).slice(0,7);
     if (k !== lastM){
-      const n = list.filter(x => dayKey(x.off).startsWith(k)).length;
-      html += `<div class="mhead">${esc(fMonth.format(keyDate(k+"-15")))} · ${n} vuelo${n===1?"":"s"}</div>`;
+      const ms = list.filter(x => dayKey(x.off).startsWith(k));
+      const h = ms.reduce((s,x) => s + Math.max(0,x.on-x.off), 0)/3600;
+      html += `<div class="mhead"><b>${esc(cap(fMonth.format(keyDate(k+"-15"))))}</b><span>${ms.length} vuelo${ms.length===1?"":"s"} · ${h.toFixed(1)} h</span></div>`;
       lastM = k;
     }
-    html += flightHTML(f);
+    html += rowHTML(f);
   });
-  if (list.length > S.shown) html += `<button class="btn" id="more" style="display:block;width:100%;text-align:center">Ver más (${list.length - S.shown})</button>`;
+  if (list.length > S.shown) html += `<button class="more" data-act="more">Ver más (${list.length - S.shown})</button>`;
   el.innerHTML = html;
 }
-function drawKPIs(list){
-  const secs = list.reduce((s,f) => s + Math.max(0, f.on - f.off), 0);
+
+/* ================= resumen ================= */
+function drawResumen(list){
+  const secs = list.reduce((s,f) => s + Math.max(0,f.on-f.off), 0);
   const nm = list.reduce((s,f) => s + (f.nm||0), 0);
-  const aps = new Set(); list.forEach(f => { if (f.dep) aps.add(f.dep); if (f.arr) aps.add(f.arr); });
+  const dest = new Set(); list.forEach(f => [f.dep,f.arr].forEach(c => { if (c) dest.add(c); }));
   document.getElementById("k1").textContent = nf.format(list.length);
   document.getElementById("k2").textContent = (secs/3600).toFixed(secs/3600 < 100 ? 1 : 0);
   document.getElementById("k3").textContent = nf.format(Math.round(nm*1.852));
-  document.getElementById("k4").textContent = aps.size;
-}
-function drawBars(){
-  const today = dayKey(Date.now()/1000);
-  const months = [];
-  let d = keyDate(today.slice(0,7)+"-01");
+  document.getElementById("k4").textContent = dest.size;
+  // calendario
+  const today = dayKey(nowS()), [a,b] = range();
+  const perDay = {}; FL.filter(inAp).forEach(f => { const k = dayKey(f.off); perDay[k] = (perDay[k]||0) + 1; });
+  const months = []; let d = keyDate(today.slice(0,7)+"-01");
   for (let i=0;i<12;i++){ months.unshift(d.toISOString().slice(0,7)); d.setUTCMonth(d.getUTCMonth()-1); }
-  const cnt = {}; FL.filter(inAp).forEach(f => { const k = dayKey(f.off).slice(0,7); cnt[k] = (cnt[k]||0)+1; });
-  const max = Math.max(1, ...months.map(m => cnt[m]||0));
-  const [a,b] = range();
-  document.getElementById("bars").innerHTML = months.map(m => {
-    const last = addDays(m+"-01", 40).slice(0,7)+"-01";
-    const inP = (m+"-01") <= b && addDays(last,-1) >= a;
-    const n = cnt[m]||0;
-    return `<div class="bar${inP?" in":""}" data-m="${m}" title="${esc(fMonth.format(keyDate(m+"-15")))}"><em>${n||""}</em><i style="height:${Math.max(2, n/max*85)}%"></i><span>${esc(fMon.format(keyDate(m+"-15")).replace(".",""))}</span></div>`;
-  }).join("");
-  document.getElementById("barsNote").textContent = S.ap ? `solo ${S.ap}` : "";
-}
-function drawRanks(list){
-  const ops = {}, routes = {}, unc = {};
-  list.forEach(f => {
-    ["dep","arr"].forEach(sd => { const c = f[sd]; if (!c) return;
-      ops[c] = (ops[c]||0)+1;
-      if (f[sd+"M"] !== "tierra" && f[sd+"C"] < .5) unc[c] = (unc[c]||0)+1; });
-    const r = `${f.dep||"????"} → ${f.arr||"????"}`; routes[r] = (routes[r]||0)+1;
+  let cal = "";
+  months.forEach(m => {
+    const last = Number(monthEnd(m).slice(8));
+    cal += `<div class="crow"><span class="ml" data-m="${m}">${esc(fMon.format(keyDate(m+"-15")).replace(".",""))}</span>`;
+    for (let i=1;i<=31;i++){
+      if (i > last){ cal += '<span class="c x"></span>'; continue; }
+      const k = `${m}-${String(i).padStart(2,"0")}`, n = perDay[k] || 0;
+      const nd = !n && ((DAYS[k] && DAYS[k].status === "missing") || k > today);
+      const cls = n >= 3 ? "n3" : n === 2 ? "n2" : n === 1 ? "n1" : nd ? "nd" : "";
+      cal += `<button class="c ${cls}${k < a || k > b ? " out" : ""}" data-day="${k}" title="${k}${n ? " · "+n+" vuelos" : ""}"></button>`;
+    }
+    cal += "</div>";
   });
-  const topA = Object.entries(ops).sort((a,b) => b[1]-a[1]).slice(0,10);
-  document.getElementById("aps").innerHTML = topA.length ? topA.map(([c,n]) =>
-    `<li data-ap="${esc(c)}" class="${S.ap===c?"on":""}"><span class="c">${esc(c)}</span><span class="nm">${esc(apFull(c))}${unc[c] ? `<br><span class="unc">${unc[c]} de ${n} inciertas (¿?)</span>` : ""}</span><span class="n">${n}</span></li>`).join("")
-    : '<li class="empty">Sin datos</li>';
-  const topR = Object.entries(routes).sort((a,b) => b[1]-a[1]).slice(0,8);
-  document.getElementById("routes").innerHTML = topR.length ? topR.map(([r,n]) => {
-    const [x,y] = r.split(" → ");
+  document.getElementById("cal").innerHTML = cal;
+  // barras por mes
+  const cnt = {}, hrs = {};
+  FL.filter(inAp).forEach(f => { const k = dayKey(f.off).slice(0,7); cnt[k] = (cnt[k]||0)+1; hrs[k] = (hrs[k]||0) + Math.max(0,f.on-f.off)/3600; });
+  const max = Math.max(1, ...months.map(m => cnt[m]||0));
+  document.getElementById("bars").innerHTML = months.map(m => {
+    const n = cnt[m] || 0, inP = (m+"-01") <= b && monthEnd(m) >= a;
+    return `<button class="bar${inP?" in":""}" data-m="${m}"><em>${n||""}</em><i style="height:${Math.max(2, n/max*78)}%"></i><span>${esc(fMon.format(keyDate(m+"-15")).replace(".",""))}</span><small>${n ? (hrs[m]).toFixed(0)+"h" : ""}</small></button>`;
+  }).join("");
+  // destinos
+  const ops = {}, unc = {};
+  list.forEach(f => ["dep","arr"].forEach(s => { const c = f[s]; if (!c) return; ops[c] = (ops[c]||0)+1; if (low(f,s)) unc[c] = (unc[c]||0)+1; }));
+  const top = Object.entries(ops).sort((x,y) => y[1]-x[1]).slice(0,12);
+  const mx = Math.max(1, ...top.map(t => t[1]));
+  document.getElementById("hbars").innerHTML = top.length ? top.map(([c,n]) =>
+    `<button class="hb" data-ap="${esc(c)}"><span class="c">${esc(c)}</span><span class="w"><div style="width:${Math.max(4,n/mx*100)}%">${unc[c] ? `<s style="width:${unc[c]/n*100}%;margin-left:auto"></s>` : ""}</div><small>${esc(apFull(c))}${unc[c] ? ` · ${unc[c]} estimadas con confianza baja` : ""}</small></span><span class="n">${n}</span></button>`).join("")
+    : '<div class="empty">Sin vuelos en el periodo</div>';
+  // rutas
+  const routes = {};
+  list.forEach(f => { const r = `${f.dep||"????"} → ${f.arr||"????"}`; routes[r] = (routes[r]||0)+1; });
+  const topR = Object.entries(routes).sort((x,y) => y[1]-x[1]).slice(0,8);
+  document.getElementById("routes").innerHTML = topR.length ? topR.map(([r,n]) => { const [x,y] = r.split(" → ");
     return `<li><span class="c">${esc(r)}</span><span class="nm">${esc(apName(x))} → ${esc(apName(y))}</span><span class="n">${n}</span></li>`; }).join("")
     : '<li class="empty">Sin datos</li>';
+  // notas de datos
+  const gaps = (META.gaps || []).map(([x,y]) => `${fmtKey(x)} – ${fmtKey(y)}`).join("; ");
+  const upd = META.updated ? `${fKey.format(new Date(META.updated*1000)).replace(/\./g,"")} ${tm(META.updated)}` : "—";
+  document.getElementById("dataNote").innerHTML =
+    `Trayectorias ADS-B de <a href="https://adsb.lol" target="_blank" rel="noopener">adsb.lol</a> (licencia ODbL), desde el <b>${META.from ? fmtKey(META.from) : "—"}</b> hasta el <b>${META.to ? fmtKey(META.to) : "—"}</b>; los vuelos de hoy salen en vivo y en el historial al día siguiente. Última revisión: ${esc(upd)}.` +
+    (gaps ? `<br><br>Periodos en que el avión <b>no transmitió ninguna posición</b> (sin vuelos registrables): ${esc(gaps)}.` : "") +
+    `<br><br>En zonas sin receptores (centro de México) el destino se estima con rumbo, altitud y tiempos; esos casos se marcan <span class="q lo">¿?</span> y muestran alternativas. Horas en tiempo de Monterrey.`;
 }
-function drawSummary(list){
+
+/* ================= hoja inferior ================= */
+function openSheet(kind, arg){ sheetKind = kind; sheetArg = arg; renderSheet(); }
+function closeSheet(){
+  const wasFlight = sheetKind === "flight";
+  sheetKind = null; sheetArg = null;
+  document.getElementById("sheet").hidden = true; document.getElementById("scrim").hidden = true;
+  if (wasFlight){ S.sel = null; styleSel(); markListSel(); }
+}
+function markListSel(){ document.querySelectorAll(".fl[data-id]").forEach(b => b.classList.toggle("sel", Number(b.dataset.id) === S.sel)); }
+function renderSheet(){
+  const el = document.getElementById("sheet"), sc = document.getElementById("scrim");
+  let html = "";
+  if (sheetKind === "flight") html = sheetFlight();
+  else if (sheetKind === "airport") html = sheetAirport(sheetArg);
+  else if (sheetKind === "day") html = sheetDay(sheetArg);
+  else if (sheetKind === "filters") html = sheetFilters(sheetArg);
+  else if (sheetKind === "live") html = sheetLive();
+  else if (sheetKind === "cfg") html = sheetCfg();
+  if (!html){ closeSheet(); return; }
+  const keepScroll = el.scrollTop;
+  el.innerHTML = '<div class="grab"></div>' + html; el.hidden = false;
+  if (sheetKind === "live") el.scrollTop = keepScroll;
+  sc.hidden = sheetKind === "flight" || sheetKind === "live";
+  if (sheetKind === "filters" && sheetArg === "aps"){ const i = el.querySelector("#apq"); if (i) setTimeout(() => i.focus(), 50); }
+}
+function head(title, sub){ return `<div class="shh"><div class="tt"><b>${title}</b>${sub ? `<span>${sub}</span>` : ""}</div><button class="x" data-act="close" aria-label="Cerrar">✕</button></div>`; }
+function explain(f, s){
+  const m = f[s+"M"], c = f[s], x = f[s+"X"], gap = f[s+"Gap"], k = f[s+"C"];
+  const lab = s === "dep" ? "Origen" : "Destino";
+  if (!c) return `<p><b>${lab}:</b> desconocido.</p>`;
+  const nm = `${esc(c)} (${esc(apFull(c))})`;
+  if (m === "tierra") return `<p><b>${lab}:</b> ${nm}. Observado: el avión se vio en tierra o despegando/aterrizando ahí.</p>`;
+  const where = !x ? "" : x[0] < 1.5 ? `a ${nf.format(x[1])} ft sobre ${esc(c)}` : `a ${nf.format(x[1])} ft, ${Math.round(x[0]*1.852)} km al ${CARD[x[2]]||x[2]} de ${esc(c)}`;
+  let why;
+  if (m === "escala") why = s === "arr" ? `la señal se perdió bajando ${where} y reapareció despegando de ahí ${gap} min después`
+                                         : `reapareció subiendo ${where}, ${gap} min después de perder la señal al llegar`;
+  else if (m === "secuencia") why = s === "arr" ? `la señal se perdió ${where}; coincide con el origen del vuelo siguiente` : `apareció ${where}; coincide con el destino del vuelo anterior`;
+  else why = s === "arr" ? `estimado por rumbo y descenso: la señal se perdió ${where}` : `estimado por rumbo y ascenso: apareció ${where}`;
+  const alts = (f[s+"Alt"] || []).map(([c2,pr]) => `${esc(c2)} ${esc(apName(c2)||"")} (${Math.round(pr*100)}%)`).join(", ");
+  return `<p><b>${lab}:</b> ${nm}. Sin señal ADS-B ${s==="arr"?"al aterrizar":"al despegar"}; ${why}. Confianza ${conf(k)} (${Math.round(k*100)}%).${alts ? " Otras opciones: "+alts+"." : ""}</p>`;
+}
+function howTag(f, s){
+  if (!f[s]) return '<div class="how lo">desconocido</div>';
+  if (!est(f,s)) return '<div class="how">observado</div>';
+  const c = f[s+"C"];
+  return `<div class="how ${c < .5 ? "lo" : "est"}">estimado · ${conf(c)}</div>`;
+}
+function sheetFlight(){
+  const list = filtered(true);
+  const f = FL.find(x => x.id === S.sel); if (!f) return "";
+  const i = list.findIndex(x => x.id === f.id);
+  const day = new Date(f.off*1000).toISOString().slice(0,10);
+  const kmh = f.on - f.off > 0 ? Math.round(f.nm*1.852/((f.on-f.off)/3600)) : 0;
+  return head(esc(cap(fDateL.format(new Date(f.off*1000)))), i >= 0 ? `Vuelo ${list.length - i} de ${list.length} del periodo` : "") +
+    `<div class="route">
+      <div class="rp"><div class="code">${esc(f.dep||"????")}</div><div class="city">${esc(apName(f.dep)||"desconocido")}</div><div class="tm">${f.offE?"≈":""}${tm(f.off)}</div>${howTag(f,"dep")}</div>
+      <div class="rmid">${dur(f.on-f.off)}<svg viewBox="0 0 24 24">${PLANE}</svg>${nf.format(Math.round(f.nm*1.852))} km</div>
+      <div class="rp r"><div class="code">${esc(f.arr||"????")}</div><div class="city">${esc(apName(f.arr)||"desconocido")}</div><div class="tm">${f.onE?"≈":""}${tm(f.on)}</div>${howTag(f,"arr")}</div>
+    </div>
+    <div class="facts"><div><b>${f.alt ? nf.format(f.alt) : "—"}</b><span>ft máx.</span></div><div><b>${kmh ? nf.format(kmh) : "—"}</b><span>km/h prom.</span></div><div><b>${tm(f.seen[0])}–${tm(f.seen[1])}</b><span>visto ADS-B</span></div></div>
+    <details${est(f,"dep")||est(f,"arr") ? " open" : ""}><summary>¿Cómo se determinó el origen y destino?</summary>${explain(f,"dep")}${explain(f,"arr")}</details>
+    <div class="acts">
+      <button class="btn" data-act="prev"${i <= 0 ? " disabled" : ""}>‹ Más reciente</button>
+      ${S.tab !== "mapa" ? '<button class="btn pri" data-act="onmap">Ver en mapa</button>' : ""}
+      <button class="btn" data-act="next"${i < 0 || i >= list.length-1 ? " disabled" : ""}>Más antiguo ›</button>
+    </div>
+    <div class="acts"><a class="btn lnk" href="https://globe.adsbexchange.com/?icao=0d0929&showTrace=${day}" target="_blank" rel="noopener">Trayectoria en ADS-B Exchange</a><a class="btn lnk" href="https://adsb.lol/?icao=0d0929&showTrace=${day}" target="_blank" rel="noopener">en adsb.lol</a></div>`;
+}
+function sheetAirport(c){
+  const a = apOf(c); if (!a) return "";
+  const list = filtered(false).filter(f => f.dep === c || f.arr === c);
+  const all = FL.filter(f => f.dep === c || f.arr === c);
+  return head(`${esc(c)}${a.iata ? " · "+esc(a.iata) : ""}`, esc(apFull(c))) +
+    `<p class="note">${list.length} vuelo${list.length===1?"":"s"} en el periodo · ${all.length} en todo el historial.</p>
+     <div class="acts">${S.ap === c ? '<button class="btn" data-act="clrap">Quitar filtro</button>' : `<button class="btn pri" data-ap="${esc(c)}">Ver solo vuelos de ${esc(c)}</button>`}</div>
+     <div class="sec">Vuelos recientes</div>${all.slice(0,6).map(rowHTML).join("") || '<div class="empty">Sin vuelos</div>'}`;
+}
+function sheetDay(k){
+  const list = FL.filter(f => dayKey(f.off) === k && inAp(f));
+  const st = DAYS[k] && DAYS[k].status;
+  return head(esc(cap(fKeyL.format(keyDate(k)))), `${list.length} vuelo${list.length===1?"":"s"}`) +
+    (list.length ? [...list].reverse().map(rowHTML).join("") : `<div class="empty">${st === "missing" ? "adsb.lol no publicó datos de ese día." : st === "none" ? "El avión no transmitió ese día (sin vuelos registrados)." : "Sin vuelos registrados."}</div>`) +
+    (list.length ? `<div class="acts"><button class="btn" data-day-filter="${k}">Ver este día en el mapa</button></div>` : "");
+}
+function sheetFilters(focus){
   const [a,b] = range();
-  const txt = `${fmtKey(a)} – ${fmtKey(b)}`;
-  const apTxt = S.ap ? ` · <b>${esc(S.ap)}</b> ${esc(apName(S.ap))}<span class="clr" data-clr="ap">quitar</span>` : "";
-  const low = list.filter(f => (f.dep && f.depM !== "tierra" && f.depC < .5) || (f.arr && f.arrM !== "tierra" && f.arrC < .5) || !f.dep || !f.arr).length;
-  document.getElementById("summary").innerHTML =
-    `Periodo: <b>${txt}</b>${apTxt} · <b>${list.length}</b> vuelos` + (low ? ` · ${low} con origen o destino incierto (¿?)` : "");
-  document.getElementById("mapPeriod").textContent = `${txt} · ${list.length} vuelos`;
+  const ops = {}; FL.forEach(f => [f.dep,f.arr].forEach(c => { if (c) ops[c] = (ops[c]||0)+1; }));
+  const items = Object.entries(ops).sort((x,y) => y[1]-x[1]);
+  return head(focus === "aps" ? "Filtrar por aeropuerto" : "Periodo", focus === "aps" ? "Muestra solo los vuelos que salen o llegan ahí" : "Elige un rango o fechas exactas") +
+    (focus === "aps" ? `<input class="search" id="apq" type="search" placeholder="Buscar (código, ciudad o nombre)">
+      <div class="aplist" id="aplist"><button data-ap="" class="${S.ap?"":"on"}"><span class="c">Todos</span><span class="nm">Todos los aeropuertos</span></button>${items.map(([c,n]) =>
+        `<button data-ap="${esc(c)}" class="${S.ap===c?"on":""}" data-s="${esc((c+" "+apFull(c)+" "+((apOf(c)||{}).iata||"")).toLowerCase())}"><span class="c">${esc(c)}</span><span class="nm">${esc(apFull(c))}</span><span class="n">${n}</span></button>`).join("")}</div>`
+    : `<div class="chips" style="flex-wrap:wrap">${PERIODS.map(([v,l]) => `<button class="chip${S.p===v?" on":""}" data-p="${v}">${l}</button>`).join("")}</div>
+      <div class="drow"><label>Desde<input type="date" id="dFrom" value="${a}"></label><label>Hasta<input type="date" id="dTo" value="${b}"></label></div>
+      <div class="acts"><button class="btn pri" data-act="applyDates">Aplicar fechas</button></div>`);
 }
-function selBox(){
-  const box = document.getElementById("selbox");
-  const f = FL.find(x => x.id === S.sel);
-  if (!f){ box.hidden = true; return; }
-  box.hidden = false;
-  box.innerHTML = `<div class="t"><b>${esc(f.dep||"????")} → ${esc(f.arr||"????")}</b><br>${esc(fDate.format(new Date(f.off*1000)))} · ${f.offE?"≈":""}${fTime.format(new Date(f.off*1000))} – ${f.onE?"≈":""}${fTime.format(new Date(f.on*1000))}</div>
-    <button data-act="detail">Detalle</button><button data-act="clear">✕</button>`;
+function liveState(){
+  const n = nowS();
+  if (LV && LV.pos && !LV.pos.ground && n - LV.pos.t < 180) return {src:"live", p:LV.pos, near:LV.near, flight:LV.flight};
+  const l = LIVE && LIVE.last;
+  if (l && !l.ground && !l.historic && n - l.t < 600) return {src:"main", p:l, near:null, flight:null};
+  return null;
 }
-function select(id, from){
-  S.sel = (S.sel === id && from !== "map") ? null : id;
-  const list = filtered();
-  const idx = list.findIndex(f => f.id === S.sel);
-  if (idx >= S.shown) S.shown = idx + 10;
-  drawList(list); styleFlights(); selBox();
-  const g = flightLayers.get(S.sel);
-  if (g && map){ map.fitBounds(g.getBounds(),{padding:[30,30], maxZoom:10}); }
-  if (from === "list" && S.sel !== null && window.innerWidth < 980)
-    document.getElementById("map").scrollIntoView({behavior:"smooth", block:"center"});
+function nearTxt(n){ return !n ? "" : n.d < 3 ? `sobre ${n.city || n.name} (${n.code})` : `${nf.format(Math.round(n.d*1.852))} km al ${CARD[n.dir]||n.dir} de ${n.city || n.name} (${n.code})`; }
+function sheetLive(){
+  const st = liveState(); if (!st) return "";
+  const p = st.p, f = st.flight, ago = Math.max(0, Math.round(nowS() - p.t));
+  const vr = p.vr ? (p.vr > 150 ? `subiendo ${nf.format(Math.abs(p.vr))} ft/min` : p.vr < -150 ? `bajando ${nf.format(Math.abs(p.vr))} ft/min` : "nivelado") : "";
+  return head('<span class="q live">EN VIVO</span> XA-UWK en vuelo', `posición de hace ${ago < 90 ? ago+" s" : Math.round(ago/60)+" min"}`) +
+    `<div class="big4"><div><b>${p.alt ? nf.format(p.alt) : "—"}</b><span>ft</span></div><div><b>${p.gs ? nf.format(Math.round(p.gs*1.852)) : "—"}</b><span>km/h</span></div><div><b>${p.gs ? Math.round(p.gs) : "—"}</b><span>nudos</span></div><div><b>${p.trk ?? "—"}°</b><span>rumbo</span></div></div>
+     <p class="note" style="margin-top:8px">${vr ? esc(vr)+". " : ""}${st.near ? "Va a "+esc(nearTxt(st.near))+"." : ""}</p>
+     ${f && f.dep ? `<p class="note">Despegó de <b>${esc(f.dep)}</b> (${esc(apName(f.dep))})${f.off ? " a las "+tm(f.off) : ""}${f.depHint ? " (estimado)" : ""}${f.off ? ` · ${dur(nowS()-f.off)} en el aire` : ""}.</p>` : ""}
+     ${st.src === "main" ? `<p class="note">Posición de la última revisión automática. ${tok() ? "Iniciando seguimiento cada 10 s…" : "Para verlo moverse cada 10 s, agrega tu token en Ajustes (⚙)."}</p>` : ""}
+     <div class="acts"><button class="btn${S.follow?" on":""}" data-act="follow">${S.follow ? "Siguiendo al avión" : "Seguir al avión en el mapa"}</button></div>`;
 }
-function render(fit){
-  const list = filtered();
-  if (S.sel !== null && !list.some(f => f.id === S.sel)) S.sel = null;
-  drawSummary(list); drawKPIs(list); drawMap(list, fit); drawBars(); drawRanks(list); drawList(list); selBox();
-  document.querySelectorAll("#periods button").forEach(b => b.classList.toggle("on", b.dataset.p === S.p));
-  document.getElementById("customRow").hidden = S.p !== "custom";
-  document.getElementById("apSel").value = S.ap;
-  setFH();
-}
-function setFH(){ document.documentElement.style.setProperty("--fh", document.getElementById("filters").offsetHeight+"px"); }
-
-function drawStatus(){
-  const el = document.getElementById("status");
-  let l = LIVE && LIVE.last;
-  if (LV && LV.pos && (!l || LV.pos.t >= l.t)){
-    const n = LV.near;
-    l = {t: LV.pos.t, ground: LV.pos.ground, alt: LV.pos.alt,
-         ap: LV.pos.ground && n && n.d < 3 ? n.code : null, apCity: LV.pos.ground && n && n.d < 3 ? (n.city || n.name) : null};
-  }
-  if (!l){ el.innerHTML = '<span class="dot"></span><span>Sin datos de posición</span>'; return; }
-  const t = new Date(l.t*1000), today = dayKey(Date.now()/1000), k = dayKey(l.t);
-  const when = k === today ? `hoy ${fTime.format(t)}` : k === addDays(today,-1) ? `ayer ${fTime.format(t)}` : `${fDateY.format(t)} ${fTime.format(t)}`;
-  const where = l.ground ? (l.ap ? `En tierra · <b>${esc(l.apCity || l.apName || "")}</b> (${esc(l.ap)})` : "En tierra")
-    : `En vuelo · <b>${l.alt ? nf.format(l.alt)+" ft" : ""}</b>`;
-  el.innerHTML = `<span class="dot${l.ground ? "" : " air"}"></span><span>${where} · último contacto ${when}</span>`;
-}
-function drawFoot(){
-  const upd = META.updated ? `${fDateY.format(new Date(META.updated*1000))} ${fTime.format(new Date(META.updated*1000))}` : "—";
-  const to = META.to ? fmtKey(META.to) : "—";
-  const load = META.complete ? "" : ` Cargando historial (${META.days_pending} días pendientes).`;
-  document.getElementById("foot").innerHTML =
-    `Datos ADS-B de <a href="https://adsb.lol" target="_blank" rel="noopener">adsb.lol</a> (licencia ODbL 1.0), disponibles hasta el ${esc(to)}; se actualiza a diario.${esc(load)}<br>
-     Actualizado: ${esc(upd)} · Aeropuertos: OurAirports · Mapa: © OpenStreetMap · Horas de Monterrey · v5`;
+function sheetCfg(){
+  const t = tok();
+  return head("Ajustes", "Actualizar y seguimiento en vivo") +
+    `<div class="cfg"><p class="note">Con un token de GitHub, el botón ⟳ actualiza los datos al momento y el vuelo en curso se ve moverse cada 10 s. El token se guarda solo en este dispositivo.</p>
+     <ol><li>Abre <a class="btn lnk" style="padding:3px 7px" href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub → token nuevo</a></li>
+     <li><b>Repository access:</b> Only select repositories → <b>XA-UWK</b>.</li>
+     <li><b>Permissions:</b> <b>Actions: Read and write</b> y <b>Contents: Read-only</b>.</li>
+     <li>Genera el token, cópialo y pégalo aquí.</li></ol>
+     <input id="tokIn" type="password" placeholder="${t ? "Token guardado (pega otro para cambiarlo)" : "github_pat_…"}" autocomplete="off" autocapitalize="off" spellcheck="false">
+     <div class="acts"><button class="btn pri" data-act="tokSave">Guardar y probar</button>${t ? '<button class="btn" data-act="tokDel">Borrar token</button><button class="btn" data-act="startLive">Iniciar seguimiento en vivo</button>' : ""}</div>
+     <p class="note" id="tokMsg" style="margin-top:8px">${t ? "Token guardado en este dispositivo." : ""}</p></div>`;
 }
 
-/* ---------- GitHub: actualizar a la orden y seguimiento en vivo ---------- */
+/* ================= vivo ================= */
 const REPO = "juanpablogza1/XA-UWK", GHAPI = "https://api.github.com/repos/" + REPO;
-let LV = null, liveTimer = null, follow = false, liveSel = null;
+let liveTimer = null, autoStarted = false;
 const tok = () => { try { return localStorage.getItem("xauwk.gh") || ""; } catch(e){ return ""; } };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 async function gh(path, opts = {}){
@@ -533,275 +658,210 @@ async function gh(path, opts = {}){
   if (tok()) headers.Authorization = "Bearer " + tok();
   return fetch(GHAPI + path, {...opts, headers, cache:"no-store"});
 }
-function msg(t){ const el = document.getElementById("updmsg"); el.hidden = !t; el.textContent = t || ""; }
-function openCfg(why){
-  document.getElementById("cfgWhy").textContent = why || "Para que los botones lancen los procesos de GitHub se necesita un token de tu cuenta. Se guarda solo en este dispositivo.";
-  document.getElementById("tokIn").value = "";
-  document.getElementById("tokMsg").textContent = tok() ? "Hay un token guardado." : "";
-  document.getElementById("cfg").hidden = false;
-}
-async function testTok(){
-  const r = await gh("/actions/workflows");
-  return r.ok;
-}
+let toastT = null;
+function toast(t, ms){ const el = document.getElementById("toast"); el.textContent = t || ""; el.hidden = !t; clearTimeout(toastT); if (t && ms) toastT = setTimeout(() => el.hidden = true, ms); }
 async function activeRun(wf){
-  const r = await gh(`/actions/workflows/${wf}/runs?per_page=5`);
-  if (!r.ok) return null;
-  const j = await r.json();
-  return (j.workflow_runs || []).find(x => x.status === "in_progress" || x.status === "queued") || null;
+  const r = await gh(`/actions/workflows/${wf}/runs?per_page=5`); if (!r.ok) return null;
+  const j = await r.json(); return (j.workflow_runs || []).find(x => x.status === "in_progress" || x.status === "queued") || null;
 }
 async function dispatch(wf){
-  const r = await gh(`/actions/workflows/${wf}/dispatches`, {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ref:"main"})});
+  const r = await gh(`/actions/workflows/${wf}/dispatches`, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ref:"main"})});
   return r.status === 204;
 }
-async function reloadFromRepo(){
-  const r = await gh("/commits/main");
-  if (!r.ok) return false;
-  const sha = (await r.json()).sha;
-  const base = `https://raw.githubusercontent.com/${REPO}/${sha}/data/`;
-  const [fl, ap, meta, live] = await Promise.all(["flights","airports","meta","live"].map(n =>
-    fetch(base + n + ".json", {cache:"no-store"}).then(x => x.ok ? x.json() : null).catch(() => null)));
-  if (!Array.isArray(fl)) return false;
-  setData(fl, ap, meta, live);
-  return true;
-}
-async function updateNow(){
-  if (!tok()){ openCfg("Para actualizar desde la app necesitas un token de GitHub (solo se guarda en este dispositivo)."); return; }
-  const b = document.getElementById("btnUpd");
-  if (b.classList.contains("busy")) return;
-  b.classList.add("busy");
+async function startLive(silent){
+  if (!tok()){ if (!silent) openSheet("cfg"); return; }
   try {
-    const t0 = Date.now();
-    let run = await activeRun("update.yml");
-    if (!run){
-      msg("Iniciando actualización…");
-      if (!(await dispatch("update.yml"))){ msg("No se pudo iniciar la actualización: revisa el token en Ajustes."); return; }
-    }
-    for (let i = 0; i < 120; i++){
-      await sleep(5000);
-      const r = await gh("/actions/workflows/update.yml/runs?per_page=5");
-      const j = r.ok ? await r.json() : {};
-      run = (j.workflow_runs || []).find(x => new Date(x.created_at).getTime() >= t0 - 90000) || run;
-      const secs = Math.round((Date.now() - t0) / 1000);
-      if (run && run.status === "completed"){
-        if (run.conclusion !== "success"){ msg("La actualización falló en GitHub. Intenta de nuevo en unos minutos."); return; }
-        break;
-      }
-      msg(`Actualizando en GitHub… ${secs} s`);
-    }
-    msg("Descargando datos nuevos…");
-    const ok = await reloadFromRepo();
-    await fetchLive(true);
-    msg(ok ? `Actualizado a las ${fTime.format(new Date())}.` : "Actualizado; recarga la app si no ves cambios.");
-    setTimeout(() => msg(""), 8000);
-  } catch(e){
-    msg("Sin conexión con GitHub.");
-  } finally { b.classList.remove("busy"); }
+    if (await activeRun("live.yml")){ if (!silent) toast("El seguimiento en vivo ya está activo.", 4000); }
+    else if (await dispatch("live.yml")){ if (!silent) toast("Seguimiento iniciado; la primera posición tarda ~1 min.", 5000); }
+    else if (!silent) toast("No se pudo iniciar: revisa el token en Ajustes.", 5000);
+  } catch(e){}
+  scheduleLive(20000);
 }
-async function startLive(){
-  if (!tok()){ openCfg("Para iniciar el seguimiento en vivo desde la app necesitas un token de GitHub (solo se guarda en este dispositivo)."); return; }
-  const run = await activeRun("live.yml");
-  if (run){ msg("El seguimiento en vivo ya está activo."); }
-  else if (await dispatch("live.yml")){ msg("Seguimiento iniciado: la primera posición tarda ~1 min."); }
-  else { msg("No se pudo iniciar: revisa el token en Ajustes."); return; }
-  setTimeout(() => msg(""), 8000);
-  scheduleLive(15000);
-}
-async function fetchLive(once){
+async function fetchLive(){
   let d = null;
   try {
-    if (tok()){
-      const r = await gh("/contents/live.json?ref=live", {headers:{Accept:"application/vnd.github.raw+json"}});
-      if (r.ok) d = await r.json();
-    } else {
-      const r = await fetch(`https://raw.githubusercontent.com/${REPO}/live/live.json?t=${Date.now()}`, {cache:"no-store"});
-      if (r.ok) d = await r.json();
-    }
+    if (tok()){ const r = await gh("/contents/live.json?ref=live", {headers:{Accept:"application/vnd.github.raw+json"}}); if (r.ok) d = await r.json(); }
+    else { const r = await fetch(`https://raw.githubusercontent.com/${REPO}/live/live.json?t=${Date.now()}`, {cache:"no-store"}); if (r.ok) d = await r.json(); }
   } catch(e){}
-  if (d){ LV = d; drawLive(); drawStatus(); }
-  if (!once) scheduleLive();
+  if (d) LV = d;
+  // la revision automatica (cada 15 min) tambien detecta vuelos
+  if (!d || !d.tracking){ const l = await getJSON("data/live.json", null); if (l) LIVE = l; }
+  drawLive(); scheduleLive();
 }
 function scheduleLive(ms){
   clearTimeout(liveTimer);
-  const active = LV && LV.tracking && Date.now()/1000 - (LV.updated || 0) < 300;
-  liveTimer = setTimeout(() => fetchLive(), ms || (active ? (tok() ? 10000 : 60000) : 60000));
+  const flying = !!liveState();
+  liveTimer = setTimeout(fetchLive, ms || (flying && tok() ? 10000 : flying ? 45000 : 60000));
 }
 function planeIcon(trk){
-  return L.divIcon({className:"planeic", iconSize:[30,30], iconAnchor:[15,15],
-    html:`<svg viewBox="0 0 24 24" style="transform:rotate(${Math.round(trk||0)}deg)"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg>`});
+  return L.divIcon({className:"planeic", iconSize:[32,32], iconAnchor:[16,16], html:`<svg viewBox="0 0 24 24" style="transform:rotate(${Math.round(trk||0)}deg)">${PLANE}</svg>`});
 }
-const lvAp = c => (LV && LV.airports && LV.airports[c]) || AP[c] || null;
-const lvName = c => { const a = lvAp(c); return a ? (a.city || a.name) : (c || "?"); };
 function todayFlights(){
-  if (!LV || LV.date !== dayKey(Date.now()/1000)) return [];
+  if (!LV || LV.date !== dayKey(nowS())) return [];
   const out = (LV.today || []).map(f => ({...f, live:false}));
   if (LV.flight) out.push({...LV.flight, live:true});
   return out;
 }
 function drawLive(){
-  const card = document.getElementById("liveCard");
-  const now = Date.now()/1000, p = LV && LV.pos;
-  const fresh = p && now - p.t < 180;
-  const airNow = fresh && !p.ground;
-  const lastAir = LIVE && LIVE.last && !LIVE.last.ground && !LIVE.last.historic && now - LIVE.last.t < 1800;
-  // tarjeta
-  if (LV && (LV.tracking || airNow)){
-    const ago = p ? Math.max(0, Math.round(now - p.t)) : null;
-    const agoTxt = ago === null ? "" : ago < 90 ? `hace ${ago} s` : `hace ${Math.round(ago/60)} min`;
-    const n = LV.near, f = LV.flight;
-    const where = n ? (n.d < 3 ? `Sobre ${esc(n.code)} (${esc(n.city || n.name)})` : `${nf.format(Math.round(n.d*1.852))} km al ${CARD[n.dir]||n.dir} de ${esc(n.city || n.name)} (${esc(n.code)})`) : "";
-    const vr = p && p.vr ? (p.vr > 150 ? "subiendo" : p.vr < -150 ? "bajando" : "nivelado") : "";
-    let html = `<div class="lh"><span class="tag ${airNow ? "blink" : "off"}">${airNow ? "EN VIVO" : p && p.ground ? "EN TIERRA" : "SIN SEÑAL"}</span>
-      <b>${f && f.dep ? esc(f.dep)+" → en vuelo" : airNow ? "En vuelo" : p && p.ground && n && n.d < 3 ? esc(n.city || n.name) : "Seguimiento activo"}</b><span class="ago">${agoTxt}</span></div>`;
-    if (p && !p.ground){
-      html += `<div class="big"><div><b>${p.alt ? nf.format(p.alt) : "—"}</b><span>ft ${vr}</span></div><div><b>${p.gs ?? "—"}</b><span>nudos</span></div>
-        <div><b>${p.gs ? nf.format(Math.round(p.gs*1.852)) : "—"}</b><span>km/h</span></div><div><b>${p.trk ?? "—"}°</b><span>rumbo</span></div></div>`;
-    }
-    if (where) html += `<p>${where}.</p>`;
-    if (f && f.dep) html += `<p>Despegó de <b>${esc(f.dep)}</b> (${esc(lvName(f.dep))}) a las ${f.off ? fTime.format(new Date(f.off*1000)) : "—"}.</p>`;
-    else if (f && f.partial) html += `<p>El seguimiento empezó con el avión ya en el aire.</p>`;
-    if (LV.tracking && !p) html += `<p>Esperando señal del avión: no transmite o está fuera de cobertura (se revisa cada 10 s).</p>`;
-    else if (LV.tracking && p && !fresh) html += `<p>Sin señal desde ${fTime.format(new Date(p.t*1000))}: puede estar en tierra con el transpondedor apagado o fuera de cobertura.</p>`;
-    if (!LV.tracking) html += `<p>El seguimiento terminó (${esc(LV.end || "")}).</p>`;
-    html += `<div class="acts"><button class="btn${follow ? " on" : ""}" data-live="follow">${follow ? "Siguiendo al avión" : "Centrar en el avión"}</button>${LV.tracking ? "" : '<button class="btn" data-live="start">Seguir en vivo</button>'}</div>`;
-    card.innerHTML = html; card.hidden = false;
-  } else if (lastAir){
-    card.innerHTML = `<div class="lh"><span class="tag blink">EN VUELO</span><b>Visto en vuelo a las ${fTime.format(new Date(LIVE.last.t*1000))}</b></div>
-      <p>${LIVE.last.alt ? nf.format(LIVE.last.alt)+" ft · " : ""}${LIVE.last.gs ? Math.round(LIVE.last.gs)+" nudos" : ""}</p>
-      <div class="acts"><button class="btn" data-live="start">Seguir en vivo</button></div>`;
-    card.hidden = false;
-  } else card.hidden = true;
-  // mapa
+  const st = liveState(), b = document.getElementById("banner");
+  if (st){
+    const p = st.p, f = st.flight;
+    document.getElementById("bTitle").textContent = f && f.dep ? `EN VUELO AHORA · desde ${f.dep}` : "EN VUELO AHORA";
+    document.getElementById("bText").textContent = [p.alt ? nf.format(p.alt)+" ft" : "", p.gs ? nf.format(Math.round(p.gs*1.852))+" km/h" : "", st.near ? nearTxt(st.near) : ""].filter(Boolean).join(" · ");
+    if (b.hidden){ b.hidden = false; setTimeout(() => map && map.invalidateSize(), 50); }
+    if (st.src === "main" && tok() && !autoStarted){ autoStarted = true; startLive(true); }
+  } else if (!b.hidden){
+    b.hidden = true; S.follow = false; if (sheetKind === "live") closeSheet();
+    setTimeout(() => map && map.invalidateSize(), 50);
+  }
+  if (sheetKind === "live") renderSheet();
+  // mapa: vuelos de hoy y avion
   if (map && layerL){
     layerL.clearLayers();
-    todayFlights().forEach((f, i) => {
+    todayFlights().forEach(f => {
       const pts = (f.track || []).map(x => [x[1], x[2]]);
-      const a = lvAp(f.dep), b = lvAp(f.arr);
+      const a = apOf(f.dep), z = apOf(f.arr);
       if (a && pts.length && !f.partial) pts.unshift([a.lat, a.lon]);
-      if (b && pts.length) pts.push([b.lat, b.lon]);
-      if (pts.length > 1){
-        const sel = liveSel === i;
-        L.polyline(pts, {color:"#3ddc97", weight: f.live || sel ? 4 : 2.5, opacity: f.live || sel ? 1 : .75}).addTo(layerL);
-      }
+      if (z && pts.length && !f.live) pts.push([z.lat, z.lon]);
+      if (pts.length > 1) L.polyline(pts, {color:"#3ddc97", weight: f.live ? 4 : 2.5, opacity: f.live ? 1 : .8}).addTo(layerL);
     });
-    if (p && (fresh || (LV && LV.tracking))){
-      const m = L.marker([p.lat, p.lon], {icon: planeIcon(p.trk), zIndexOffset:1000});
-      m.bindTooltip(`XA-UWK${p.alt ? " · "+nf.format(p.alt)+" ft" : ""}`, {direction:"top", offset:[0,-12]});
-      m.addTo(layerL);
-      if (follow) map.panTo([p.lat, p.lon]);
+    if (st && st.p.lat != null){
+      const m = L.marker([st.p.lat, st.p.lon], {icon:planeIcon(st.p.trk), zIndexOffset:1000});
+      m.on("click", () => openSheet("live")); m.addTo(layerL);
+      if (S.follow) map.panTo([st.p.lat, st.p.lon]);
     }
   }
-  // tarjeta "Hoy"
-  const tf = todayFlights();
-  const tc = document.getElementById("todayCard");
-  if (tf.length){
-    tc.hidden = false;
-    document.getElementById("todayList").innerHTML = tf.map((f, i) => `<div class="fl${liveSel === i ? " sel" : ""}" data-today="${i}">
-      <div class="top"><span>${f.live ? "En curso" : "Completado"}</span><span>${f.off ? fTime.format(new Date(f.off*1000)) : "—"} → ${f.on ? fTime.format(new Date(f.on*1000)) : f.live ? "en vuelo" : "—"}</span></div>
-      <div class="rt"><div class="ap">${esc(f.dep || "????")}<small>${esc(f.dep ? lvName(f.dep) : "Despegó sin cobertura")}</small></div>
-      <div class="mid"><svg viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg></div>
-      <div class="ap r">${f.live ? "…" : esc(f.arr || "????")}<small>${f.live ? "en vuelo" : esc(f.arr ? lvName(f.arr) : "Se perdió la señal")}</small></div></div></div>`).join("");
-  } else tc.hidden = true;
+  // seccion Hoy
+  const tf = todayFlights(), box = document.getElementById("todayBox");
+  box.innerHTML = tf.length ? `<div class="mhead"><b>Hoy</b><span>seguimiento en vivo</span></div>` + tf.map(f =>
+    `<div class="fl"><div class="d"><b>${esc(fDnum.format(new Date()))}</b><span>hoy</span></div>
+      <div class="r"><div class="codes">${esc(f.dep||"????")}<em>→</em>${f.live ? '<span class="q live">en vuelo</span>' : esc(f.arr||"????")}</div>
+      <div class="cities">${esc(apName(f.dep)||"despegó sin señal")} → ${f.live ? "en curso" : esc(apName(f.arr)||"se perdió la señal")}</div></div>
+      <div class="tm"><b>${f.off ? tm(f.off) : "—"}</b>${f.on ? tm(f.on) : f.live ? "en el aire" : ""}</div></div>`).join("") : "";
 }
 
-/* ---------- eventos ---------- */
+/* ================= actualizar a la orden ================= */
+async function reloadFromRepo(){
+  const r = await gh("/commits/main"); if (!r.ok) return false;
+  const sha = (await r.json()).sha, base = `https://raw.githubusercontent.com/${REPO}/${sha}/data/`;
+  const [fl, ap, meta, live, days] = await Promise.all(["flights","airports","meta","live","days"].map(n =>
+    fetch(base + n + ".json", {cache:"no-store"}).then(x => x.ok ? x.json() : null).catch(() => null)));
+  if (!Array.isArray(fl)) return false;
+  setData(fl, ap, meta, live, days); return true;
+}
+async function updateNow(){
+  if (!tok()){ openSheet("cfg"); toast("Para actualizar desde la app agrega tu token de GitHub.", 5000); return; }
+  const btn = document.getElementById("btnUpd"); if (btn.classList.contains("busy")) return;
+  btn.classList.add("busy");
+  try {
+    const t0 = Date.now();
+    let run = await activeRun("update.yml");
+    if (!run && !(await dispatch("update.yml"))){ toast("No se pudo iniciar: revisa el token en Ajustes.", 6000); return; }
+    for (let i=0;i<120;i++){
+      await sleep(5000);
+      const r = await gh("/actions/workflows/update.yml/runs?per_page=5"); const j = r.ok ? await r.json() : {};
+      run = (j.workflow_runs || []).find(x => new Date(x.created_at).getTime() >= t0 - 90000) || run;
+      if (run && run.status === "completed"){ if (run.conclusion !== "success"){ toast("La actualización falló en GitHub; intenta en unos minutos.", 6000); return; } break; }
+      toast(`Actualizando en GitHub… ${Math.round((Date.now()-t0)/1000)} s`);
+    }
+    toast("Descargando datos…");
+    const ok = await reloadFromRepo(); await fetchLive();
+    toast(ok ? `Actualizado a las ${fTime.format(new Date())}` : "Actualizado; recarga si no ves cambios.", 5000);
+  } catch(e){ toast("Sin conexión con GitHub.", 5000); }
+  finally { btn.classList.remove("busy"); }
+}
+
+/* ================= render general ================= */
+function setTab(t){
+  S.tab = t;
+  document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === t));
+  document.querySelectorAll(".tab").forEach(s => s.classList.toggle("on", s.id === "tab-" + t));
+  if (t === "mapa" && map) setTimeout(() => map.invalidateSize(), 30);
+  if (sheetKind === "flight") renderSheet();
+}
+function render(fit){
+  const list = filtered(false);
+  if (S.sel !== null && !list.some(f => f.id === S.sel)){ S.sel = null; if (sheetKind === "flight") closeSheet(); }
+  drawFilterBars(list); drawMap(list, fit); drawList(); drawResumen(list);
+  if (sheetKind && sheetKind !== "live") renderSheet();
+}
+function openFlight(id, from){
+  S.sel = id; styleSel(); markListSel();
+  const list = filtered(true), idx = list.findIndex(f => f.id === id);
+  if (idx >= S.shown){ S.shown = idx + 20; drawList(); }
+  openSheet("flight");
+  if (from !== "map" && S.tab === "mapa") focusFlight(id);
+}
+function setData(fl, ap, meta, live, days){
+  FL = (Array.isArray(fl) ? fl : []).filter(f => f && f.off).sort((a,b) => b.off - a.off);
+  AP = ap || {}; META = meta || {}; LIVE = live || {}; DAYS = days || DAYS;
+  render(); drawLive();
+}
+
+/* ================= eventos ================= */
+document.getElementById("tabs").addEventListener("click", e => { const b = e.target.closest("button[data-tab]"); if (b) setTab(b.dataset.tab); });
 document.getElementById("btnUpd").addEventListener("click", updateNow);
-document.getElementById("btnCfg").addEventListener("click", () => openCfg());
-document.getElementById("cfgClose").addEventListener("click", () => { document.getElementById("cfg").hidden = true; });
-document.getElementById("cfg").addEventListener("click", e => { if (e.target.id === "cfg") e.target.hidden = true; });
-document.getElementById("tokSave").addEventListener("click", async () => {
-  const v = document.getElementById("tokIn").value.trim(), m = document.getElementById("tokMsg");
-  if (!v){ m.textContent = "Pega el token primero."; return; }
-  try { localStorage.setItem("xauwk.gh", v); } catch(e){ m.textContent = "Este navegador no permite guardar el token."; return; }
-  m.textContent = "Probando…";
-  let ok = false; try { ok = await testTok(); } catch(e){}
-  m.textContent = ok ? "Listo: el token funciona. Ya puedes usar Actualizar y Seguir en vivo." : "GitHub rechazó el token: revisa el repositorio XA-UWK y los permisos de Actions.";
-  if (ok) fetchLive(true);
+document.getElementById("btnCfg").addEventListener("click", () => openSheet("cfg"));
+document.getElementById("banner").addEventListener("click", () => {
+  setTab("mapa"); S.follow = true; const st = liveState();
+  if (st && map) map.setView([st.p.lat, st.p.lon], Math.max(map.getZoom(), 8));
+  openSheet("live");
 });
-document.getElementById("tokDel").addEventListener("click", () => {
-  try { localStorage.removeItem("xauwk.gh"); } catch(e){}
-  document.getElementById("tokMsg").textContent = "Token borrado de este dispositivo.";
-});
-document.getElementById("liveCard").addEventListener("click", e => {
-  const a = e.target.dataset.live;
-  if (a === "follow"){ follow = !follow; drawLive(); if (follow && LV && LV.pos && map){ map.setView([LV.pos.lat, LV.pos.lon], Math.max(map.getZoom(), 7)); document.getElementById("map").scrollIntoView({behavior:"smooth", block:"center"}); } }
-  if (a === "start") startLive();
-});
-document.getElementById("todayList").addEventListener("click", e => {
-  const c = e.target.closest("[data-today]"); if (!c || !map) return;
-  const i = Number(c.dataset.today); liveSel = liveSel === i ? null : i; drawLive();
-  const f = todayFlights()[i]; const pts = (f && f.track || []).map(x => [x[1], x[2]]);
-  if (liveSel !== null && pts.length) { map.fitBounds(L.latLngBounds(pts), {padding:[30,30], maxZoom:9}); if (window.innerWidth < 980) document.getElementById("map").scrollIntoView({behavior:"smooth", block:"center"}); }
-});
-document.getElementById("periods").addEventListener("click", e => {
-  const b = e.target.closest("button"); if (!b) return;
-  S.p = b.dataset.p; S.shown = 40;
-  if (S.p === "custom"){
-    const [a,c] = range(); S.from = S.from || a; S.to = S.to || c;
-    document.getElementById("dFrom").value = S.from; document.getElementById("dTo").value = S.to;
+document.getElementById("legBtn").addEventListener("click", () => { const l = document.getElementById("legend"); l.hidden = !l.hidden; });
+document.getElementById("scrim").addEventListener("click", closeSheet);
+document.getElementById("q").addEventListener("input", e => { S.q = e.target.value.trim(); S.shown = 60; drawList(); });
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-p],[data-act],[data-ap],[data-day],[data-m],[data-id],[data-day-filter]");
+  if (!t || e.target.closest("a")) return;
+  const d = t.dataset;
+  if (d.p !== undefined){ S.p = d.p; S.shown = 60; if (sheetKind === "filters") closeSheet(); render(); return; }
+  if (d.ap !== undefined && !d.act){ S.ap = d.ap; S.shown = 60; closeSheet(); render(); return; }
+  if (d.dayFilter){ S.p = "custom"; S.from = S.to = d.dayFilter; closeSheet(); setTab("mapa"); render(); return; }
+  if (d.day){ openSheet("day", d.day); return; }
+  if (d.m && !d.act){ S.p = "custom"; S.from = d.m + "-01"; S.to = monthEnd(d.m); S.shown = 60; render(); toast(`Mostrando ${fMonth.format(keyDate(d.m+"-15"))}`, 2500); return; }
+  if (d.id){ openFlight(Number(d.id), "list"); return; }
+  switch (d.act){
+    case "close": closeSheet(); break;
+    case "dates": openSheet("filters", "dates"); break;
+    case "aps": if (S.ap){ S.ap = ""; render(); } else openSheet("filters", "aps"); break;
+    case "clrap": S.ap = ""; closeSheet(); render(); break;
+    case "applyDates": { const a = document.getElementById("dFrom").value, b = document.getElementById("dTo").value;
+      if (a && b){ S.p = "custom"; S.from = a; S.to = b; S.shown = 60; closeSheet(); render(); } break; }
+    case "more": S.shown += 60; drawList(); break;
+    case "prev": case "next": { const list = filtered(true), i = list.findIndex(f => f.id === S.sel), j = d.act === "prev" ? i-1 : i+1;
+      if (list[j]){ S.sel = list[j].id; styleSel(); markListSel(); renderSheet(); if (S.tab === "mapa") focusFlight(S.sel); } break; }
+    case "onmap": setTab("mapa"); setTimeout(() => focusFlight(S.sel), 80); break;
+    case "follow": S.follow = !S.follow; { const st = liveState(); if (S.follow && st && map) map.setView([st.p.lat, st.p.lon], Math.max(map.getZoom(), 8)); } renderSheet(); break;
+    case "tokSave": { const v = (document.getElementById("tokIn").value || "").trim(), m = document.getElementById("tokMsg");
+      if (!v){ m.textContent = "Pega el token primero."; break; }
+      try { localStorage.setItem("xauwk.gh", v); } catch(err){ m.textContent = "Este navegador no permite guardar el token."; break; }
+      m.textContent = "Probando…";
+      gh("/actions/workflows").then(r => { m.textContent = r.ok ? "Listo: el token funciona." : "GitHub rechazó el token: revisa el repositorio XA-UWK y el permiso de Actions."; if (r.ok) fetchLive(); })
+        .catch(() => m.textContent = "Sin conexión con GitHub."); break; }
+    case "tokDel": try { localStorage.removeItem("xauwk.gh"); } catch(err){} renderSheet(); break;
+    case "startLive": startLive(false); break;
   }
-  render();
 });
-["dFrom","dTo"].forEach(id => document.getElementById(id).addEventListener("change", () => {
-  S.from = document.getElementById("dFrom").value || S.from;
-  S.to = document.getElementById("dTo").value || S.to;
-  S.shown = 40; render();
-}));
-document.getElementById("apSel").addEventListener("change", e => { S.ap = e.target.value; S.shown = 40; render(); });
-document.getElementById("summary").addEventListener("click", e => { if (e.target.dataset.clr === "ap"){ S.ap = ""; render(); } });
-document.getElementById("bars").addEventListener("click", e => {
-  const b = e.target.closest(".bar"); if (!b) return;
-  const m = b.dataset.m; S.p = "custom"; S.from = m+"-01"; S.to = addDays(addDays(m+"-01",40).slice(0,7)+"-01",-1);
-  document.getElementById("dFrom").value = S.from; document.getElementById("dTo").value = S.to;
-  S.shown = 40; render();
-  window.scrollTo({top:0, behavior:"smooth"});
+document.addEventListener("input", e => {
+  if (e.target.id !== "apq") return;
+  const q = e.target.value.trim().toLowerCase();
+  document.querySelectorAll("#aplist button[data-s]").forEach(b => b.hidden = !!q && !b.dataset.s.includes(q));
 });
-document.getElementById("aps").addEventListener("click", e => {
-  const li = e.target.closest("li[data-ap]"); if (!li) return;
-  S.ap = S.ap === li.dataset.ap ? "" : li.dataset.ap; S.shown = 40; render();
-});
-document.getElementById("list").addEventListener("click", e => {
-  if (e.target.id === "more"){ S.shown += 40; drawList(filtered()); return; }
-  if (e.target.closest("a")) return;
-  const c = e.target.closest(".fl"); if (!c) return;
-  select(Number(c.dataset.id), "list");
-});
-document.getElementById("selbox").addEventListener("click", e => {
-  const a = e.target.dataset.act;
-  if (a === "clear"){ S.sel = null; styleFlights(); selBox(); drawList(filtered()); drawMap(filtered()); }
-  if (a === "detail"){ const el = document.querySelector(`.fl[data-id="${S.sel}"]`); if (el) el.scrollIntoView({behavior:"smooth", block:"center"}); }
-});
-document.getElementById("map").addEventListener("click", e => {
-  const a = e.target.closest("a[data-ap]"); if (!a) return;
-  e.preventDefault(); S.ap = a.dataset.ap; S.shown = 40; render();
-});
-window.addEventListener("resize", () => { setFH(); if (map) map.invalidateSize(); });
+document.addEventListener("visibilitychange", () => { if (!document.hidden) fetchLive(); });
+window.addEventListener("resize", () => { if (map) map.invalidateSize(); });
 
 (async () => {
   initMap();
-  const [fl, ap, meta, live] = await Promise.all([
-    getJSON("data/flights.json", []), getJSON("data/airports.json", {}),
-    getJSON("data/meta.json", {}), getJSON("data/live.json", {})]);
-  setData(fl, ap, meta, live);
+  const [fl, ap, meta, live, days] = await Promise.all([
+    getJSON("data/flights.json", []), getJSON("data/airports.json", {}), getJSON("data/meta.json", {}),
+    getJSON("data/live.json", {}), getJSON("data/days.json", {})]);
+  setData(fl, ap, meta, live, days);
   fetchLive();
 })();
-function setData(fl, ap, meta, live){
-  FL = (Array.isArray(fl) ? fl : []).filter(f => f && f.off).sort((a,b) => b.off - a.off);
-  AP = ap || {}; META = meta || {}; LIVE = live || {};
-  const ops = {};
-  FL.forEach(f => [f.dep,f.arr].forEach(c => { if (c) ops[c] = (ops[c]||0)+1; }));
-  const sel = document.getElementById("apSel");
-  sel.innerHTML = '<option value="">Todos los aeropuertos</option>' +
-    Object.entries(ops).sort((a,b) => b[1]-a[1]).map(([c,n]) =>
-      `<option value="${esc(c)}">${esc(c)} · ${esc(apFull(c))} (${n})</option>`).join("");
-  drawStatus(); drawFoot(); render(); drawLive();
-}
-document.addEventListener("visibilitychange", () => { if (!document.hidden) fetchLive(); });
 
 if ("serviceWorker" in navigator){
-  const hadController = !!navigator.serviceWorker.controller;
-  let reloaded = false;
-  navigator.serviceWorker.addEventListener("controllerchange", () => { if (hadController && !reloaded){ reloaded = true; location.reload(); } });
+  const had = !!navigator.serviceWorker.controller; let re = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => { if (had && !re){ re = true; location.reload(); } });
   navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r => r.update()).catch(() => {});
 }
 </script>
