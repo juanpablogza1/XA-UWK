@@ -23,6 +23,7 @@ PUSH_EVERY = int(os.environ.get("PUSH_EVERY") or 20)
 MAX_MIN = int(os.environ.get("MAX_MINUTES") or 300)
 LINGER_MIN = int(os.environ.get("LINGER_MIN") or 75)
 LOST_MIN = 30
+WAIT_MIN = int(os.environ.get("WAIT_MIN") or 60)  # espera inicial si el avion no se ve
 REPO = os.environ.get("GITHUB_REPOSITORY", "")
 TOKEN = os.environ.get("GH_TOKEN", "")
 WORK = "/tmp/livebranch"
@@ -152,8 +153,10 @@ def main():
     while True:
         now = time.time()
         p, s = poll()
+        if s:
+            src = s
         if p:
-            pos, src, last_seen = p, s, now
+            pos, last_seen = p, now
             if p["ground"]:
                 if cur:  # aterrizo
                     a = aps.at_ground(p["lat"], p["lon"])
@@ -188,7 +191,7 @@ def main():
                 cur = None
         elif ground_since and now - ground_since > LINGER_MIN * 60:
             done = "en tierra"
-        elif pos is None and now - start > 15 * 60:
+        elif pos is None and now - start > WAIT_MIN * 60:
             done = "sin datos"
         tracking = done is None
         if now - last_push >= PUSH_EVERY or not tracking:
@@ -197,6 +200,7 @@ def main():
                 used[near["code"]] = {k: near[k] for k in ("code", "name", "city", "lat", "lon")}
             publish({
                 "updated": int(now), "tracking": tracking, "end": done, "src": src,
+                "seen": int(last_seen) if pos else None,
                 "started": int(start), "date": today,
                 "pos": pos, "near": near, "flight": cur, "today": flights_today[-12:],
                 "airports": used,

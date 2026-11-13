@@ -660,6 +660,8 @@ function drawLive(){
     if (where) html += `<p>${where}.</p>`;
     if (f && f.dep) html += `<p>Despegó de <b>${esc(f.dep)}</b> (${esc(lvName(f.dep))}) a las ${f.off ? fTime.format(new Date(f.off*1000)) : "—"}.</p>`;
     else if (f && f.partial) html += `<p>El seguimiento empezó con el avión ya en el aire.</p>`;
+    if (LV.tracking && !p) html += `<p>Esperando señal del avión: no transmite o está fuera de cobertura (se revisa cada 10 s).</p>`;
+    else if (LV.tracking && p && !fresh) html += `<p>Sin señal desde ${fTime.format(new Date(p.t*1000))}: puede estar en tierra con el transpondedor apagado o fuera de cobertura.</p>`;
     if (!LV.tracking) html += `<p>El seguimiento terminó (${esc(LV.end || "")}).</p>`;
     html += `<div class="acts"><button class="btn${follow ? " on" : ""}" data-live="follow">${follow ? "Siguiendo al avión" : "Centrar en el avión"}</button>${LV.tracking ? "" : '<button class="btn" data-live="start">Seguir en vivo</button>'}</div>`;
     card.innerHTML = html; card.hidden = false;
