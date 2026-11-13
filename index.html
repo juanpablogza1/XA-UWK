@@ -130,7 +130,7 @@ a.btn{display:inline-block;margin:6px 6px 0 0;padding:7px 10px;border-radius:8px
     <a class="btn" href="https://www.flightradar24.com/data/aircraft/xa-uwk" target="_blank" rel="noopener">Flightradar24</a>
   </div>
 
-  <div class="foot">Datos ADS-B: <a href="https://opensky-network.org" target="_blank" rel="noopener">OpenSky Network</a>. Aeropuertos: OurAirports. Horas en hora de Monterrey. Origen/destino son estimados por OpenSky.</div>
+  <div class="foot">Datos ADS-B: <a href="https://opensky-network.org" target="_blank" rel="noopener">OpenSky Network</a>. Aeropuertos: OurAirports. Horas en hora de Monterrey. Origen/destino son estimados por OpenSky. · v3</div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -290,7 +290,12 @@ document.getElementById("m").addEventListener("change",render);
   render();
 })();
 
-if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+if("serviceWorker" in navigator){
+  const hadController = !!navigator.serviceWorker.controller;
+  let reloaded = false;
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{ if(hadController && !reloaded){ reloaded=true; location.reload(); } });
+  navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>r.update()).catch(()=>{});
+}
 </script>
 </body>
 </html>
