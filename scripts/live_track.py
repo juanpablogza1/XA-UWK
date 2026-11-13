@@ -117,6 +117,18 @@ def last_arrival():
         return None
 
 
+def infer_dep(aps, p):
+    """Origen probable de un vuelo que se empezo a seguir ya en el aire:
+    rumbo, altitud y distancia (mismo modelo que el historial)."""
+    q = (p["t"], p["lat"], p["lon"], p["alt"], p["gs"], p["trk"], p["vr"])
+    best = None
+    for A, _ in aps.near(p["lat"], p["lon"], 300):
+        c = H.dep_cost(A, q, None, aps)[0]
+        if best is None or c < best[0]:
+            best = (c, A)
+    return best[1] if best else None
+
+
 def ap_info(a):
     return {"code": a["code"], "name": a["name"], "city": a["city"], "lat": a["lat"], "lon": a["lon"]}
 
@@ -138,6 +150,20 @@ def main():
         print("Falta GITHUB_REPOSITORY / GH_TOKEN")
         return 1
     aps = H.Airports()
+    try:  # aeropuertos que el avion usa (prior del modelo de estimacion)
+        habit = {}
+        for f in json.load(open(os.path.join(H.DATA, "flights.json"), encoding="utf-8")):
+            for s_ in ("dep", "arr"):
+                c = f.get(s_)
+                if not c:
+                    continue
+                if f.get(s_ + "M") == "tierra":
+                    aps.visited.add(c)
+                elif f.get(s_ + "C", 0) >= 0.7:
+                    habit[c] = habit.get(c, 0) + 1
+        aps.habit = habit
+    except Exception:  # noqa: BLE001
+        pass
     prev = setup_branch()
     start = time.time()
     today = mty_day(start)
@@ -155,6 +181,12 @@ def main():
             used[a["code"]] = ap_info(a)
         return a["code"] if a else None
 
+    if cur and cur.get("depHint") and (cur.get("first") or cur.get("track")):
+        t0 = cur["track"][0] if cur.get("track") else None
+        first = cur.get("first") or {"t": t0[0], "lat": t0[1], "lon": t0[2], "alt": t0[3], "gs": 200, "trk": None, "vr": None}
+        A = infer_dep(aps, first)
+        if A:
+            cur["dep"] = remember(A)
     for f in flights_today + ([cur] if cur else []):
         for c in (f.get("dep"), f.get("arr")):
             if c and c in aps.by_code:
@@ -186,12 +218,10 @@ def main():
                         dep = H.low_airport((p["t"], p["lat"], p["lon"], p["alt"], p["gs"], p["trk"], p["vr"]), aps)
                     hint = False
                     if dep is None:
-                        # empezo ya en el aire: el origen probable es el ultimo aeropuerto conocido
-                        code = (flights_today[-1].get("arr") if flights_today else None) or last_arrival()
-                        if code and code in aps.by_code:
-                            dep, hint = aps.by_code[code], True
+                        # empezo ya en el aire: origen estimado por rumbo y posicion
+                        dep, hint = infer_dep(aps, p), True
                     cur = {"dep": remember(dep), "off": p["t"] if dep and not hint else None,
-                           "partial": dep is None or hint, "depHint": hint, "track": []}
+                           "partial": dep is None or hint, "depHint": hint, "first": p, "track": []}
                 tr = cur["track"]
                 if not tr or tr[-1][0] != p["t"]:
                     tr.append([p["t"], p["lat"], p["lon"], p["alt"]])

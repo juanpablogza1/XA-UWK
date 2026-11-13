@@ -706,7 +706,7 @@ function drawLive(){
   const st = liveState(), b = document.getElementById("banner");
   if (st){
     const p = st.p, f = st.flight;
-    document.getElementById("bTitle").textContent = f && f.dep ? `EN VUELO AHORA · desde ${f.dep}` : "EN VUELO AHORA";
+    document.getElementById("bTitle").textContent = f && f.dep ? `EN VUELO AHORA · desde ${f.depHint ? "≈" : ""}${f.dep}` : "EN VUELO AHORA";
     document.getElementById("bText").textContent = [p.alt ? nf.format(p.alt)+" ft" : "", p.gs ? nf.format(Math.round(p.gs*1.852))+" km/h" : "", st.near ? nearTxt(st.near) : ""].filter(Boolean).join(" · ");
     if (b.hidden){ b.hidden = false; setTimeout(() => map && map.invalidateSize(), 50); }
     if (st.src === "main" && tok() && !autoStarted){ autoStarted = true; startLive(true); }
