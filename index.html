@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>XA-UWK · Historial de vuelos</title>
 <meta name="theme-color" content="#0b1220">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -14,287 +14,513 @@
 <style>
 :root{
   --bg:#0b1220; --card:#121b2e; --card2:#18233a; --line:#24314d;
-  --text:#e7ecf5; --mut:#8b98b3; --acc:#f5a524; --acc2:#3fb7ff; --ok:#3ddc97;
+  --text:#e7ecf5; --mut:#8b98b3; --acc:#f5a524; --acc2:#3fb7ff; --ok:#3ddc97; --fh:150px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
 html,body{background:var(--bg);color:var(--text);font:15px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
-body{padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
-.wrap{max-width:560px;margin:0 auto;padding:16px 14px 40px}
-header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
-.logo{width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,var(--acc),#e8590c);display:grid;place-items:center;flex:none}
-.logo svg{width:28px;height:28px;fill:#0b1220}
-h1{font-size:22px;letter-spacing:.5px}
-.sub{color:var(--mut);font-size:13px}
-.live{margin-left:auto;font-size:12px;padding:5px 9px;border-radius:999px;background:var(--card2);color:var(--mut);white-space:nowrap}
-.live.on{background:rgba(61,220,151,.15);color:var(--ok)}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
-.card h2{font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--mut);margin-bottom:10px;font-weight:600}
-.specs{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;font-size:13px}
-.specs b{display:block;color:var(--mut);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.6px}
+button,select,input{font:inherit;color:inherit}
+.wrap{max-width:600px;margin:0 auto;padding:0 12px 40px}
+header.top{display:flex;align-items:center;gap:12px;padding:calc(env(safe-area-inset-top) + 12px) 12px 8px;max-width:600px;margin:0 auto}
+.logo{width:42px;height:42px;border-radius:11px;background:linear-gradient(135deg,var(--acc),#e8590c);display:grid;place-items:center;flex:none}
+.logo svg{width:26px;height:26px;fill:#0b1220}
+h1{font-size:21px;letter-spacing:.5px;line-height:1.1}
+.sub{color:var(--mut);font-size:12.5px}
+.status{max-width:600px;margin:0 auto 8px;padding:0 12px;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mut)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--mut);flex:none}
+.dot.air{background:var(--ok);box-shadow:0 0 0 3px rgba(61,220,151,.2)}
+.status b{color:var(--text);font-weight:600}
+
+.filters{position:sticky;top:0;z-index:1100;background:rgba(11,18,32,.96);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:8px 0 8px}
+.filters .in{max-width:600px;margin:0 auto;padding:0 12px}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.chips::-webkit-scrollbar{display:none}
+.chips button{flex:none;background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13.5px;cursor:pointer;white-space:nowrap}
+.chips button.on{background:var(--acc);border-color:var(--acc);color:#0b1220;font-weight:600}
+.frow{display:flex;gap:8px;margin-top:7px}
+.frow select,.frow input{flex:1;min-width:0;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:14px}
+.frow label{flex:1;display:flex;flex-direction:column;font-size:11px;color:var(--mut);gap:3px}
+.summary{margin-top:7px;font-size:12.5px;color:var(--mut)}
+.summary b{color:var(--text);font-weight:600}
+.summary .clr{color:var(--acc2);cursor:pointer;margin-left:6px;text-decoration:underline}
+
+.layout{margin-top:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:12px}
+.card h2{font-size:12.5px;text-transform:uppercase;letter-spacing:1px;color:var(--mut);font-weight:600}
+.cardhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:8px}
+.cardhead span{font-size:12.5px;color:var(--text)}
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
-.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center}
-.kpi .v{font-size:19px;white-space:nowrap;font-weight:700;font-variant-numeric:tabular-nums}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 4px;text-align:center}
+.kpi .v{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
 .kpi .l{font-size:10.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
-#map{height:280px;border-radius:12px;background:#0e1626}
-.leaflet-container{background:#0e1626}
+
+.mapwrap{position:relative}
+#map{height:360px;border-radius:10px;background:#0e1626}
+.leaflet-container{background:#0e1626;font:inherit}
 .dark-tiles{filter:invert(1) hue-rotate(180deg) brightness(.9) contrast(.85) saturate(.5)}
-.bars{display:flex;align-items:flex-end;gap:4px;height:110px;padding-top:6px}
-.bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0}
-.bar i{display:block;width:100%;background:var(--acc2);border-radius:4px 4px 0 0;min-height:2px}
+.aplabel{background:rgba(11,18,32,.85)!important;color:var(--text)!important;border:1px solid var(--line)!important;border-radius:6px!important;box-shadow:none!important;font-size:11px!important;font-weight:600;padding:1px 5px!important}
+.aplabel:before{display:none}
+.selbox{position:absolute;left:52px;right:8px;top:8px;z-index:900;background:rgba(18,27,46,.97);border:1px solid var(--acc);border-radius:10px;padding:8px 10px;font-size:13px;display:flex;gap:8px;align-items:center}
+.selbox .t{flex:1;min-width:0}
+.selbox .t b{font-size:15px}
+.selbox button{background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:5px 9px;font-size:12.5px;cursor:pointer}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--mut);margin-top:8px;flex-wrap:wrap}
+.legend i{display:inline-block;width:22px;height:0;border-top:2px solid var(--acc2);vertical-align:middle;margin-right:5px}
+.legend i.d{border-top-style:dashed}
+.legend i.lo{border-top-color:#ff8a7a}
+.legend i.p{width:9px;height:9px;border:0;border-radius:50%;background:var(--acc)}
+
+.bars{display:flex;align-items:flex-end;gap:3px;height:120px}
+.bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0;cursor:pointer;border-radius:6px}
+.bar i{display:block;width:100%;background:#2b4a6b;border-radius:4px 4px 0 0;min-height:2px}
+.bar.in i{background:var(--acc2)}
 .bar span{font-size:10px;color:var(--mut);margin-top:4px;white-space:nowrap}
-.bar em{font-style:normal;font-size:10px;color:var(--text);margin-bottom:2px}
-.routes li{list-style:none;display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px}
-.routes li:last-child{border:0}
-.routes .n{color:var(--acc);font-weight:700}
-.filters{display:flex;gap:8px;margin-bottom:10px}
-.filters input,.filters select{flex:1;min-width:0;background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:15px}
-.fl{background:var(--card2);border-radius:12px;padding:12px;margin-bottom:8px;cursor:pointer;border:1px solid transparent}
+.bar em{font-style:normal;font-size:10.5px;margin-bottom:2px}
+.hint{font-size:11.5px;color:var(--mut);margin-top:6px}
+
+ul.rank{list-style:none}
+ul.rank li{display:flex;align-items:center;gap:10px;padding:7px 2px;border-bottom:1px solid var(--line);font-size:14px;cursor:pointer}
+ul.rank li:last-child{border:0}
+ul.rank li .c{font-weight:700;min-width:52px}
+ul.rank li .nm{flex:1;min-width:0;color:var(--mut);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ul.rank li .n{color:var(--acc);font-weight:700}
+ul.rank li .unc{color:#ff9b8a;font-size:11px}
+ul.rank li.on{background:rgba(245,165,36,.1)}
+
+.mhead{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.8px;margin:12px 2px 6px}
+.fl{background:var(--card2);border-radius:12px;padding:10px 12px;margin-bottom:8px;cursor:pointer;border:1px solid transparent}
 .fl.sel{border-color:var(--acc)}
-.fl .top{display:flex;justify-content:space-between;font-size:12px;color:var(--mut);margin-bottom:6px}
+.fl .top{display:flex;justify-content:space-between;font-size:12px;color:var(--mut);margin-bottom:5px}
 .fl .rt{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px}
-.fl .ap{font-size:20px;font-weight:700;letter-spacing:.5px}
+.fl .ap{font-size:19px;font-weight:700;letter-spacing:.3px;min-width:0}
 .fl .ap small{display:block;font-size:11.5px;font-weight:400;color:var(--mut);letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fl .r{text-align:right}
-.fl .mid{color:var(--acc);font-size:12px;text-align:center}
-.fl .mid svg{width:22px;height:22px;fill:var(--acc);display:block;margin:0 auto}
-.fl .times{display:flex;justify-content:space-between;font-size:13px;margin-top:6px;font-variant-numeric:tabular-nums}
-.fl .more{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:13px;color:var(--mut)}
+.est{display:inline-block;font-size:10px;font-weight:600;color:#0b1220;background:#ffcf70;border-radius:4px;padding:0 4px;margin-left:4px;vertical-align:3px;letter-spacing:0}
+.est.lo{background:#ff9b8a}
+.est.hi{background:#3a4a66;color:var(--text)}
+.fl .mid{color:var(--acc);font-size:11.5px;text-align:center;white-space:nowrap}
+.fl .mid svg{width:20px;height:20px;fill:var(--acc);display:block;margin:0 auto;transform:rotate(90deg)}
+.fl .times{display:flex;justify-content:space-between;font-size:13px;margin-top:5px;font-variant-numeric:tabular-nums}
+.fl .more{display:none;margin-top:9px;padding-top:9px;border-top:1px solid var(--line);font-size:12.5px;color:var(--mut)}
 .fl.sel .more{display:block}
-a.btn{display:inline-block;margin:6px 6px 0 0;padding:7px 10px;border-radius:8px;background:var(--card);color:var(--acc2);text-decoration:none;font-size:13px;border:1px solid var(--line)}
-.empty{color:var(--mut);text-align:center;padding:20px 8px;font-size:14px}
-.foot{color:var(--mut);font-size:12px;text-align:center;margin-top:14px}
+.fl .more p{margin-bottom:6px}
+.fl .more b{color:var(--text)}
+a.btn,button.btn{display:inline-block;margin:4px 6px 0 0;padding:6px 10px;border-radius:8px;background:var(--card);color:var(--acc2);text-decoration:none;font-size:12.5px;border:1px solid var(--line);cursor:pointer}
+.empty{color:var(--mut);text-align:center;padding:18px 8px;font-size:14px}
+.foot{color:var(--mut);font-size:11.5px;text-align:center;margin-top:10px;line-height:1.5}
 .foot a{color:var(--acc2)}
+
+@media (min-width:980px){
+  header.top,.status,.filters .in{max-width:1280px}
+  .wrap{max-width:1280px}
+  .layout{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:14px;align-items:start}
+  .left{position:sticky;top:calc(var(--fh) + 12px)}
+  #map{height:calc(100vh - var(--fh) - 330px);min-height:360px}
+}
 </style>
 </head>
 <body>
+<header class="top">
+  <div class="logo"><svg viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg></div>
+  <div>
+    <h1>XA-UWK</h1>
+    <div class="sub">Pilatus PC-12 · Mode S 0D0929 · MSN 1534</div>
+  </div>
+</header>
+<div class="status" id="status"><span class="dot"></span><span>Cargando…</span></div>
+
+<div class="filters" id="filters"><div class="in">
+  <div class="chips" id="periods">
+    <button data-p="7">7 días</button>
+    <button data-p="30">30 días</button>
+    <button data-p="90">90 días</button>
+    <button data-p="365" class="on">12 meses</button>
+    <button data-p="all">Todo</button>
+    <button data-p="custom">Fechas…</button>
+  </div>
+  <div class="frow" id="customRow" hidden>
+    <label>Desde<input type="date" id="dFrom"></label>
+    <label>Hasta<input type="date" id="dTo"></label>
+  </div>
+  <div class="frow"><select id="apSel"><option value="">Todos los aeropuertos</option></select></div>
+  <div class="summary" id="summary"></div>
+</div></div>
+
 <div class="wrap">
-  <header>
-    <div class="logo"><svg viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg></div>
-    <div>
-      <h1>XA-UWK</h1>
-      <div class="sub">Pilatus PC-12 · Hex 0D0929</div>
+  <div class="layout">
+    <div class="left">
+      <div class="kpis">
+        <div class="kpi"><div class="v" id="k1">0</div><div class="l">Vuelos</div></div>
+        <div class="kpi"><div class="v" id="k2">0</div><div class="l">Horas</div></div>
+        <div class="kpi"><div class="v" id="k3">0</div><div class="l">Km</div></div>
+        <div class="kpi"><div class="v" id="k4">0</div><div class="l">Aeropuertos</div></div>
+      </div>
+      <div class="card">
+        <div class="cardhead"><h2>Mapa</h2><span id="mapPeriod"></span></div>
+        <div class="mapwrap">
+          <div id="map"></div>
+          <div class="selbox" id="selbox" hidden></div>
+        </div>
+        <div class="legend"><span><i></i>Trayectoria observada</span><span><i class="d"></i>Sin cobertura (estimado)</span><span><i class="d lo"></i>Estimado, confianza baja</span><span><i class="p"></i>Aeropuerto</span></div>
+      </div>
+      <div class="card">
+        <div class="cardhead"><h2>Vuelos por mes</h2><span id="barsNote"></span></div>
+        <div class="bars" id="bars"></div>
+        <div class="hint">Toca un mes para ver solo ese mes.</div>
+      </div>
     </div>
-    <div class="live" id="live">Sin señal</div>
-  </header>
-
-  <div class="card">
-    <h2>Aeronave</h2>
-    <div class="specs">
-      <div><b>Matrícula</b>XA-UWK (México)</div>
-      <div><b>Modelo</b>Pilatus PC-12</div>
-      <div><b>Mode S (ICAO24)</b>0D0929</div>
-      <div><b>MSN</b>1534</div>
-      <div><b>Propietario registrado</b>Alsuper S.A.</div>
-      <div><b>Datos actualizados</b><span id="upd">—</span></div>
-      <div><b>Historial desde</b><span id="hist">—</span></div>
-      <div><b>Fuente</b>OpenSky Network</div>
+    <div class="right">
+      <div class="card">
+        <div class="cardhead"><h2>Aeropuertos</h2><span>operaciones</span></div>
+        <ul class="rank" id="aps"></ul>
+      </div>
+      <div class="card">
+        <div class="cardhead"><h2>Rutas frecuentes</h2></div>
+        <ul class="rank" id="routes"></ul>
+      </div>
+      <div class="card">
+        <div class="cardhead"><h2 id="listTitle">Vuelos</h2><span>hora de Monterrey</span></div>
+        <div id="list"></div>
+      </div>
+      <div class="foot" id="foot"></div>
     </div>
   </div>
-
-  <div class="kpis">
-    <div class="kpi"><div class="v" id="k1">0</div><div class="l">Vuelos</div></div>
-    <div class="kpi"><div class="v" id="k2">0</div><div class="l">Horas</div></div>
-    <div class="kpi"><div class="v" id="k3">0</div><div class="l">Aeropuertos</div></div>
-    <div class="kpi"><div class="v" id="k4">—</div><div class="l">Último</div></div>
-  </div>
-
-  <div class="card">
-    <h2>Mapa de rutas</h2>
-    <div id="map"></div>
-  </div>
-
-  <div class="card">
-    <h2>Vuelos por mes</h2>
-    <div class="bars" id="bars"></div>
-  </div>
-
-  <div class="card">
-    <h2>Rutas más frecuentes</h2>
-    <ul class="routes" id="routes"></ul>
-  </div>
-
-  <div class="card">
-    <h2>Historial</h2>
-    <div class="filters">
-      <input id="q" type="search" placeholder="Aeropuerto o ciudad">
-      <select id="m"><option value="">Todos los meses</option></select>
-    </div>
-    <div id="list"></div>
-  </div>
-
-  <div class="card">
-    <h2>Rastreo externo</h2>
-    <a class="btn" href="https://globe.adsbexchange.com/?icao=0d0929" target="_blank" rel="noopener">ADS-B Exchange</a>
-    <a class="btn" href="https://www.flightaware.com/live/flight/XAUWK/history" target="_blank" rel="noopener">FlightAware</a>
-    <a class="btn" href="https://adsb.lol/?icao=0d0929" target="_blank" rel="noopener">adsb.lol</a>
-    <a class="btn" href="https://www.flightradar24.com/data/aircraft/xa-uwk" target="_blank" rel="noopener">Flightradar24</a>
-  </div>
-
-  <div class="foot">Datos ADS-B: <a href="https://opensky-network.org" target="_blank" rel="noopener">OpenSky Network</a>. Aeropuertos: OurAirports. Horas en hora de Monterrey. Origen/destino son estimados por OpenSky. · v3</div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+"use strict";
 const TZ = "America/Monterrey";
-const fmtD = new Intl.DateTimeFormat("es-MX",{timeZone:TZ,weekday:"short",day:"2-digit",month:"short",year:"numeric"});
-const fmtT = new Intl.DateTimeFormat("es-MX",{timeZone:TZ,hour:"2-digit",minute:"2-digit",hour12:false});
-const fmtM = new Intl.DateTimeFormat("es-MX",{timeZone:TZ,month:"short",year:"2-digit"});
-const fmtShort = new Intl.DateTimeFormat("es-MX",{timeZone:TZ,day:"2-digit",month:"short"});
-const fmtK = t => { const p=fmtShort.formatToParts(new Date(t*1000)); return p.find(x=>x.type==="day").value+" "+p.find(x=>x.type==="month").value.replace(".",""); };
-const monthKey = t => { const p = new Intl.DateTimeFormat("en-CA",{timeZone:TZ,year:"numeric",month:"2-digit"}).format(new Date(t*1000)); return p.slice(0,7); };
-const dur = s => { const h=Math.floor(s/3600), m=Math.round((s%3600)/60); return h? `${h} h ${m} min` : `${m} min`; };
-const esc = s => String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fDay = new Intl.DateTimeFormat("en-CA",{timeZone:TZ,year:"numeric",month:"2-digit",day:"2-digit"});
+const fDate = new Intl.DateTimeFormat("es-MX",{timeZone:TZ,weekday:"short",day:"numeric",month:"short"});
+const fDateY = new Intl.DateTimeFormat("es-MX",{timeZone:TZ,day:"numeric",month:"short",year:"numeric"});
+const fTime = new Intl.DateTimeFormat("es-MX",{timeZone:TZ,hour:"2-digit",minute:"2-digit",hour12:false});
+const fMonth = new Intl.DateTimeFormat("es-MX",{timeZone:"UTC",month:"long",year:"numeric"});
+const fMon = new Intl.DateTimeFormat("es-MX",{timeZone:"UTC",month:"short"});
+const fKey = new Intl.DateTimeFormat("es-MX",{timeZone:"UTC",day:"numeric",month:"short",year:"numeric"});
+const CARD = {N:"norte",NE:"noreste",E:"este",SE:"sureste",S:"sur",SO:"suroeste",O:"oeste",NO:"noroeste"};
+const esc = s => String(s ?? "").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const dayKey = t => fDay.format(new Date(t*1000));
+const keyDate = k => { const [y,m,d]=k.split("-").map(Number); return new Date(Date.UTC(y,m-1,d)); };
+const addDays = (k,n) => { const d=keyDate(k); d.setUTCDate(d.getUTCDate()+n); return d.toISOString().slice(0,10); };
+const fmtKey = k => fKey.format(keyDate(k)).replace(/\./g,"");
+const nf = new Intl.NumberFormat("es-MX");
+const dur = s => { s=Math.max(0,s); const h=Math.floor(s/3600), m=Math.round((s%3600)/60); return h? `${h} h ${String(m).padStart(2,"0")} min` : `${m} min`; };
+const conf = c => c>=.8 ? "alta" : c>=.5 ? "media" : "baja";
 
-let FL=[], AP={}, map, routeLayer, selLayer, selId=null, shown=25;
+let FL=[], AP={}, META={}, LIVE={};
+const S = {p:"365", from:null, to:null, ap:"", sel:null, shown:40};
+let map, layerF, layerA, flightLayers = new Map();
 
-async function getJSON(p, def){ try{ const r=await fetch(p+"?t="+Date.now(),{cache:"no-store"}); if(!r.ok) throw 0; return await r.json(); }catch(e){ return def; } }
+async function getJSON(p, def){
+  try{ const r = await fetch(p+"?v="+Date.now(),{cache:"no-store"}); if(!r.ok) throw 0; return await r.json(); }
+  catch(e){ return def; }
+}
+const apName = c => { const a = AP[c]; return a ? (a.city || a.name) : ""; };
+const apFull = c => { const a = AP[c]; return a ? `${a.name}${a.city && !a.name.includes(a.city) ? ", "+a.city : ""}` : c; };
 
-function apInfo(c){ return c && AP[c] ? AP[c] : {name:c||"Desconocido",city:"",lat:null,lon:null,iata:""}; }
-function apLabel(c){ const a=apInfo(c); return a.city || a.name; }
+/* ---------- periodo ---------- */
+function range(){
+  const today = dayKey(Date.now()/1000);
+  if (S.p === "custom" && S.from && S.to) return S.from <= S.to ? [S.from, S.to] : [S.to, S.from];
+  if (S.p === "all") return [FL.length ? dayKey(FL[FL.length-1].off) : today, today];
+  const n = Number(S.p) || 365;
+  return [addDays(today, -(n-1)), today];
+}
+function inAp(f){ return !S.ap || f.dep === S.ap || f.arr === S.ap; }
+function filtered(){
+  const [a,b] = range();
+  return FL.filter(f => { const k = dayKey(f.off); return k >= a && k <= b && inAp(f); });
+}
 
+/* ---------- mapa ---------- */
 function initMap(){
-  if(!window.L){ document.getElementById("map").innerHTML='<div class="empty">Mapa no disponible sin conexión</div>'; return; }
-  map = L.map("map",{zoomControl:false,attributionControl:true}).setView([25.8,-99.5],5);
-  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{
-    attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',maxZoom:15,className:"dark-tiles"}).addTo(map);
-  routeLayer = L.layerGroup().addTo(map);
-  selLayer = L.layerGroup().addTo(map);
+  if (!window.L){ document.getElementById("map").innerHTML = '<div class="empty">Mapa no disponible sin conexión</div>'; return; }
+  map = L.map("map",{preferCanvas:true, zoomControl:true, attributionControl:true, worldCopyJump:true}).setView([27,-99],5);
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:16,
+    attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>', className:"dark-tiles"}).addTo(map);
+  layerF = L.layerGroup().addTo(map);
+  layerA = L.layerGroup().addTo(map);
 }
-
-function arc(a,b){ // curva suave entre dos puntos
-  const pts=[], n=24, mx=(a[0]+b[0])/2, my=(a[1]+b[1])/2;
-  const dx=b[1]-a[1], dy=b[0]-a[0], k=0.18;
-  const cx=mx - dx*k, cy=my + dy*k;
-  for(let i=0;i<=n;i++){ const t=i/n;
-    pts.push([(1-t)*(1-t)*a[0]+2*(1-t)*t*cx+t*t*b[0],(1-t)*(1-t)*a[1]+2*(1-t)*t*cy+t*t*b[1]]); }
-  return pts;
-}
-
-function drawMap(list){
-  if(!map) return;
-  routeLayer.clearLayers();
-  const used = new Map(), pairs = new Map();
-  list.forEach(f=>{
-    [f.dep,f.arr].forEach(c=>{ const a=apInfo(c); if(a.lat!=null) used.set(c,(used.get(c)||0)+1); });
-    if(f.dep && f.arr && f.dep!==f.arr){ const k=[f.dep,f.arr].sort().join("-"); pairs.set(k,(pairs.get(k)||0)+1); }
+function parts(f){
+  const dep = AP[f.dep], arr = AP[f.arr], segs = (f.segs||[]).filter(s => s.length);
+  const out = [];
+  if (!segs.length){
+    if (dep && arr) out.push({pts:[[dep.lat,dep.lon],[arr.lat,arr.lon]], dash:true});
+    return out;
+  }
+  const first = segs[0][0], last = segs[segs.length-1][segs[segs.length-1].length-1];
+  if (dep) out.push({pts:[[dep.lat,dep.lon], first], dash:f.depM !== "tierra", low:f.depM !== "tierra" && f.depC < .5});
+  segs.forEach((s,i) => {
+    out.push({pts:s, dash:false});
+    if (i < segs.length-1) out.push({pts:[s[s.length-1], segs[i+1][0]], dash:true});
   });
-  const max = Math.max(1,...pairs.values());
-  pairs.forEach((n,k)=>{ const [x,y]=k.split("-").map(apInfo);
-    if(x.lat==null||y.lat==null) return;
-    L.polyline(arc([x.lat,x.lon],[y.lat,y.lon]),{color:"#3fb7ff",weight:1.5+3*n/max,opacity:.55}).addTo(routeLayer); });
-  const bounds=[];
-  used.forEach((n,c)=>{ const a=apInfo(c); bounds.push([a.lat,a.lon]);
-    L.circleMarker([a.lat,a.lon],{radius:4+Math.min(8,Math.sqrt(n)*1.5),color:"#f5a524",fillColor:"#f5a524",fillOpacity:.85,weight:1})
-     .bindPopup(`<b>${esc(c)}</b>${a.iata?" / "+esc(a.iata):""}<br>${esc(a.name)}<br>${esc(a.city)}<br>${n} operaciones`).addTo(routeLayer); });
-  if(bounds.length>1) map.fitBounds(bounds,{padding:[24,24],maxZoom:8});
-  else if(bounds.length===1) map.setView(bounds[0],7);
+  if (arr) out.push({pts:[last,[arr.lat,arr.lon]], dash:f.arrM !== "tierra", low:f.arrM !== "tierra" && f.arrC < .5});
+  return out;
+}
+function drawMap(list, fit){
+  if (!map) return;
+  layerF.clearLayers(); layerA.clearLayers(); flightLayers.clear();
+  const bounds = L.latLngBounds([]);
+  for (const f of list){
+    const g = L.featureGroup();
+    for (const p of parts(f)){
+      const pl = L.polyline(p.pts,{color: p.low ? "#ff8a7a" : "#3fb7ff", weight:2, opacity:.6, dashArray:p.dash ? "3 6" : null});
+      pl.options.base = p.low ? "#ff8a7a" : "#3fb7ff";
+      pl.on("click", () => select(f.id, "map"));
+      g.addLayer(pl);
+      p.pts.forEach(x => bounds.extend(x));
+    }
+    g.addTo(layerF); flightLayers.set(f.id, g);
+  }
+  const ops = {};
+  list.forEach(f => [f.dep,f.arr].forEach(c => { if (c) ops[c] = (ops[c]||0)+1; }));
+  const ranked = Object.entries(ops).sort((a,b) => b[1]-a[1]);
+  ranked.forEach(([c,n],i) => {
+    const a = AP[c]; if (!a) return;
+    bounds.extend([a.lat,a.lon]);
+    const m = L.circleMarker([a.lat,a.lon],{radius:4+Math.min(7,Math.sqrt(n)), color:"#0b1220", weight:1.5, fillColor:"#f5a524", fillOpacity:1});
+    m.bindTooltip(esc(c),{permanent: i < 10, direction:"right", offset:[6,0], className:"aplabel"});
+    m.bindPopup(`<b>${esc(c)}</b>${a.iata ? " · "+esc(a.iata) : ""}<br>${esc(apFull(c))}<br>${n} operaciones en el periodo<br><a href="#" data-ap="${esc(c)}">Filtrar este aeropuerto</a>`);
+    m.addTo(layerA);
+  });
+  styleFlights();
+  if (fit !== false && bounds.isValid()) map.fitBounds(bounds,{padding:[24,24], maxZoom:9});
+}
+function styleFlights(){
+  for (const [id,g] of flightLayers){
+    const on = S.sel === id, dim = S.sel !== null && !on;
+    g.eachLayer(l => l.setStyle({color: on ? "#f5a524" : l.options.base, weight: on ? 4 : 2, opacity: dim ? .1 : on ? 1 : .6}));
+    if (on) g.bringToFront();
+  }
 }
 
-function highlight(f){
-  if(!map) return;
-  selLayer.clearLayers();
-  if(!f) return;
-  const a=apInfo(f.dep), b=apInfo(f.arr);
-  if(a.lat!=null&&b.lat!=null&&f.dep!==f.arr){
-    const l=L.polyline(arc([a.lat,a.lon],[b.lat,b.lon]),{color:"#f5a524",weight:4}).addTo(selLayer);
-    map.fitBounds(l.getBounds(),{padding:[30,30],maxZoom:9});
-  } else if(a.lat!=null){ map.setView([a.lat,a.lon],8); }
+/* ---------- vistas ---------- */
+function explain(f, side){
+  const m = f[side+"M"], c = f[side], x = f[side+"X"], gap = f[side+"Gap"], k = f[side+"C"];
+  const lab = side === "dep" ? "Origen" : "Destino";
+  if (!c) return `<p><b>${lab}:</b> desconocido.</p>`;
+  const nm = `${esc(c)} (${esc(apFull(c))})`;
+  if (m === "tierra") return `<p><b>${lab}:</b> ${nm}. Observado en tierra.</p>`;
+  const where = !x ? "" : x[0] < 1.5 ? `a ${nf.format(x[1])} ft sobre ${esc(c)}`
+      : `a ${nf.format(x[1])} ft, ${Math.round(x[0])} nm al ${CARD[x[2]]||x[2]} de ${esc(c)}`;
+  let why;
+  if (m === "escala") why = side === "arr"
+      ? `la señal se perdió descendiendo ${where} y el avión reapareció despegando de ahí ${gap} min después`
+      : `el avión reapareció ascendiendo ${where}, ${gap} min después de perder la señal al llegar`;
+  else if (m === "secuencia") why = side === "arr"
+      ? `la señal se perdió ${where}; coincide con el origen del vuelo siguiente`
+      : `apareció ${where}; coincide con el destino del vuelo anterior`;
+  else why = side === "arr"
+      ? `estimado por rumbo y descenso: la señal se perdió ${where}`
+      : `estimado por rumbo y ascenso: apareció ${where}`;
+  const alts = (f[side+"Alt"]||[]).map(([c2,pr]) => `${esc(c2)} (${esc(apName(c2)||c2)}, ${Math.round(pr*100)}%)`).join(", ");
+  return `<p><b>${lab}:</b> ${nm}. Sin cobertura ADS-B ${side==="arr"?"al aterrizar":"al despegar"}; ${why}. Confianza ${conf(k)} (${Math.round(k*100)}%).${alts ? " Otras opciones: "+alts+"." : ""}</p>`;
 }
-
-function drawBars(list){
-  const by={}; list.forEach(f=>{ const k=monthKey(f.firstSeen); by[k]=(by[k]||0)+1; });
-  const keys=Object.keys(by).sort().slice(-12);
-  const el=document.getElementById("bars");
-  if(!keys.length){ el.innerHTML='<div class="empty" style="width:100%">Sin datos</div>'; return; }
-  const max=Math.max(...keys.map(k=>by[k]));
-  el.innerHTML = keys.map(k=>{ const [y,m]=k.split("-"); const lbl=fmtM.format(new Date(Date.UTC(+y,+m-1,15)));
-    return `<div class="bar"><em>${by[k]}</em><i style="height:${Math.max(2,by[k]/max*80)}%"></i><span>${esc(lbl)}</span></div>`; }).join("");
+function badge(f, side){
+  if (!f[side] || f[side+"M"] === "tierra") return "";
+  const c = f[side+"C"];
+  return `<span class="est ${c >= .8 ? "hi" : c >= .5 ? "" : "lo"}" title="Estimado · confianza ${conf(c)}">${c >= .8 ? "≈" : c >= .5 ? "est." : "¿?"}</span>`;
 }
-
-function drawRoutes(list){
-  const c={}; list.forEach(f=>{ const k=`${f.dep||"?"}→${f.arr||"?"}`; c[k]=(c[k]||0)+1; });
-  const top=Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,6);
-  document.getElementById("routes").innerHTML = top.length? top.map(([k,n])=>{ const [d,a]=k.split("→");
-    return `<li><span>${esc(apLabel(d==="?"?null:d))} → ${esc(apLabel(a==="?"?null:a))}</span><span class="n">${n}</span></li>`; }).join("")
+function flightHTML(f){
+  const day = new Date(f.off*1000).toISOString().slice(0,10);
+  return `<div class="fl${S.sel===f.id?" sel":""}" data-id="${f.id}">
+    <div class="top"><span>${esc(fDate.format(new Date(f.off*1000)))}</span><span>${dur(f.on-f.off)} · ${nf.format(Math.round(f.nm*1.852))} km${f.open?" · en curso":""}</span></div>
+    <div class="rt">
+      <div class="ap">${esc(f.dep||"????")}${badge(f,"dep")}<small>${esc(apName(f.dep)||"Desconocido")}</small></div>
+      <div class="mid"><svg viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg></div>
+      <div class="ap r">${esc(f.arr||"????")}${badge(f,"arr")}<small>${esc(apName(f.arr)||"Desconocido")}</small></div>
+    </div>
+    <div class="times"><span>Despegue ${f.offE?"≈":""}${fTime.format(new Date(f.off*1000))}</span><span>Aterrizaje ${f.onE?"≈":""}${fTime.format(new Date(f.on*1000))}</span></div>
+    <div class="more">
+      ${explain(f,"dep")}${explain(f,"arr")}
+      <p>Altitud máxima: ${f.alt ? nf.format(f.alt)+" ft" : "—"}. Visto por ADS-B de ${fTime.format(new Date(f.seen[0]*1000))} a ${fTime.format(new Date(f.seen[1]*1000))}.</p>
+      <a class="btn" href="https://globe.adsbexchange.com/?icao=0d0929&showTrace=${day}" target="_blank" rel="noopener">Ver en ADS-B Exchange</a>
+      <a class="btn" href="https://adsb.lol/?icao=0d0929&showTrace=${day}" target="_blank" rel="noopener">Ver en adsb.lol</a>
+    </div></div>`;
+}
+function drawList(list){
+  const el = document.getElementById("list");
+  document.getElementById("listTitle").textContent = `Vuelos (${list.length})`;
+  if (!FL.length){ el.innerHTML = '<div class="empty">Aún no hay datos. El proceso de GitHub Actions los carga automáticamente.</div>'; return; }
+  if (!list.length){ el.innerHTML = '<div class="empty">No hay vuelos con estos filtros.</div>'; return; }
+  let html = "", lastM = "";
+  list.slice(0, S.shown).forEach(f => {
+    const k = dayKey(f.off).slice(0,7);
+    if (k !== lastM){
+      const n = list.filter(x => dayKey(x.off).startsWith(k)).length;
+      html += `<div class="mhead">${esc(fMonth.format(keyDate(k+"-15")))} · ${n} vuelo${n===1?"":"s"}</div>`;
+      lastM = k;
+    }
+    html += flightHTML(f);
+  });
+  if (list.length > S.shown) html += `<button class="btn" id="more" style="display:block;width:100%;text-align:center">Ver más (${list.length - S.shown})</button>`;
+  el.innerHTML = html;
+}
+function drawKPIs(list){
+  const secs = list.reduce((s,f) => s + Math.max(0, f.on - f.off), 0);
+  const nm = list.reduce((s,f) => s + (f.nm||0), 0);
+  const aps = new Set(); list.forEach(f => { if (f.dep) aps.add(f.dep); if (f.arr) aps.add(f.arr); });
+  document.getElementById("k1").textContent = nf.format(list.length);
+  document.getElementById("k2").textContent = (secs/3600).toFixed(secs/3600 < 100 ? 1 : 0);
+  document.getElementById("k3").textContent = nf.format(Math.round(nm*1.852));
+  document.getElementById("k4").textContent = aps.size;
+}
+function drawBars(){
+  const today = dayKey(Date.now()/1000);
+  const months = [];
+  let d = keyDate(today.slice(0,7)+"-01");
+  for (let i=0;i<12;i++){ months.unshift(d.toISOString().slice(0,7)); d.setUTCMonth(d.getUTCMonth()-1); }
+  const cnt = {}; FL.filter(inAp).forEach(f => { const k = dayKey(f.off).slice(0,7); cnt[k] = (cnt[k]||0)+1; });
+  const max = Math.max(1, ...months.map(m => cnt[m]||0));
+  const [a,b] = range();
+  document.getElementById("bars").innerHTML = months.map(m => {
+    const last = addDays(m+"-01", 40).slice(0,7)+"-01";
+    const inP = (m+"-01") <= b && addDays(last,-1) >= a;
+    const n = cnt[m]||0;
+    return `<div class="bar${inP?" in":""}" data-m="${m}" title="${esc(fMonth.format(keyDate(m+"-15")))}"><em>${n||""}</em><i style="height:${Math.max(2, n/max*85)}%"></i><span>${esc(fMon.format(keyDate(m+"-15")).replace(".",""))}</span></div>`;
+  }).join("");
+  document.getElementById("barsNote").textContent = S.ap ? `solo ${S.ap}` : "";
+}
+function drawRanks(list){
+  const ops = {}, routes = {}, unc = {};
+  list.forEach(f => {
+    ["dep","arr"].forEach(sd => { const c = f[sd]; if (!c) return;
+      ops[c] = (ops[c]||0)+1;
+      if (f[sd+"M"] !== "tierra" && f[sd+"C"] < .5) unc[c] = (unc[c]||0)+1; });
+    const r = `${f.dep||"????"} → ${f.arr||"????"}`; routes[r] = (routes[r]||0)+1;
+  });
+  const topA = Object.entries(ops).sort((a,b) => b[1]-a[1]).slice(0,10);
+  document.getElementById("aps").innerHTML = topA.length ? topA.map(([c,n]) =>
+    `<li data-ap="${esc(c)}" class="${S.ap===c?"on":""}"><span class="c">${esc(c)}</span><span class="nm">${esc(apFull(c))}${unc[c] ? `<br><span class="unc">${unc[c]} de ${n} inciertas (¿?)</span>` : ""}</span><span class="n">${n}</span></li>`).join("")
+    : '<li class="empty">Sin datos</li>';
+  const topR = Object.entries(routes).sort((a,b) => b[1]-a[1]).slice(0,8);
+  document.getElementById("routes").innerHTML = topR.length ? topR.map(([r,n]) => {
+    const [x,y] = r.split(" → ");
+    return `<li><span class="c">${esc(r)}</span><span class="nm">${esc(apName(x))} → ${esc(apName(y))}</span><span class="n">${n}</span></li>`; }).join("")
     : '<li class="empty">Sin datos</li>';
 }
+function drawSummary(list){
+  const [a,b] = range();
+  const txt = `${fmtKey(a)} – ${fmtKey(b)}`;
+  const apTxt = S.ap ? ` · <b>${esc(S.ap)}</b> ${esc(apName(S.ap))}<span class="clr" data-clr="ap">quitar</span>` : "";
+  const low = list.filter(f => (f.dep && f.depM !== "tierra" && f.depC < .5) || (f.arr && f.arrM !== "tierra" && f.arrC < .5) || !f.dep || !f.arr).length;
+  document.getElementById("summary").innerHTML =
+    `Periodo: <b>${txt}</b>${apTxt} · <b>${list.length}</b> vuelos` + (low ? ` · ${low} con origen o destino incierto (¿?)` : "");
+  document.getElementById("mapPeriod").textContent = `${txt} · ${list.length} vuelos`;
+}
+function selBox(){
+  const box = document.getElementById("selbox");
+  const f = FL.find(x => x.id === S.sel);
+  if (!f){ box.hidden = true; return; }
+  box.hidden = false;
+  box.innerHTML = `<div class="t"><b>${esc(f.dep||"????")} → ${esc(f.arr||"????")}</b><br>${esc(fDate.format(new Date(f.off*1000)))} · ${f.offE?"≈":""}${fTime.format(new Date(f.off*1000))} – ${f.onE?"≈":""}${fTime.format(new Date(f.on*1000))}</div>
+    <button data-act="detail">Detalle</button><button data-act="clear">✕</button>`;
+}
+function select(id, from){
+  S.sel = (S.sel === id && from !== "map") ? null : id;
+  const list = filtered();
+  const idx = list.findIndex(f => f.id === S.sel);
+  if (idx >= S.shown) S.shown = idx + 10;
+  drawList(list); styleFlights(); selBox();
+  const g = flightLayers.get(S.sel);
+  if (g && map){ map.fitBounds(g.getBounds(),{padding:[30,30], maxZoom:10}); }
+  if (from === "list" && S.sel !== null && window.innerWidth < 980)
+    document.getElementById("map").scrollIntoView({behavior:"smooth", block:"center"});
+}
+function render(fit){
+  const list = filtered();
+  if (S.sel !== null && !list.some(f => f.id === S.sel)) S.sel = null;
+  drawSummary(list); drawKPIs(list); drawMap(list, fit); drawBars(); drawRanks(list); drawList(list); selBox();
+  document.querySelectorAll("#periods button").forEach(b => b.classList.toggle("on", b.dataset.p === S.p));
+  document.getElementById("customRow").hidden = S.p !== "custom";
+  document.getElementById("apSel").value = S.ap;
+  setFH();
+}
+function setFH(){ document.documentElement.style.setProperty("--fh", document.getElementById("filters").offsetHeight+"px"); }
 
-function drawKPIs(list){
-  const secs=list.reduce((s,f)=>s+Math.max(0,f.lastSeen-f.firstSeen),0);
-  const aps=new Set(); list.forEach(f=>{ if(f.dep) aps.add(f.dep); if(f.arr) aps.add(f.arr); });
-  document.getElementById("k1").textContent=list.length;
-  document.getElementById("k2").textContent=(secs/3600).toFixed(secs/3600<100?1:0);
-  document.getElementById("k3").textContent=aps.size;
-  document.getElementById("k4").textContent=list.length? fmtK(list[0].lastSeen) : "—";
+function drawStatus(){
+  const el = document.getElementById("status"), l = LIVE && LIVE.last;
+  if (!l){ el.innerHTML = '<span class="dot"></span><span>Sin datos de posición</span>'; return; }
+  const t = new Date(l.t*1000), today = dayKey(Date.now()/1000), k = dayKey(l.t);
+  const when = k === today ? `hoy ${fTime.format(t)}` : k === addDays(today,-1) ? `ayer ${fTime.format(t)}` : `${fDateY.format(t)} ${fTime.format(t)}`;
+  const where = l.ground ? `En tierra · <b>${esc(l.apCity || l.apName || "")}</b> (${esc(l.ap||"")})` : `En vuelo · <b>${l.alt ? nf.format(l.alt)+" ft" : ""}</b>`;
+  el.innerHTML = `<span class="dot${l.ground ? "" : " air"}"></span><span>${where} · último contacto ${when}</span>`;
+}
+function drawFoot(){
+  const upd = META.updated ? `${fDateY.format(new Date(META.updated*1000))} ${fTime.format(new Date(META.updated*1000))}` : "—";
+  const to = META.to ? fmtKey(META.to) : "—";
+  const load = META.complete ? "" : ` Cargando historial (${META.days_pending} días pendientes).`;
+  document.getElementById("foot").innerHTML =
+    `Datos ADS-B de <a href="https://adsb.lol" target="_blank" rel="noopener">adsb.lol</a> (licencia ODbL 1.0), disponibles hasta el ${esc(to)}; se actualiza a diario.${esc(load)}<br>
+     Actualizado: ${esc(upd)} · Aeropuertos: OurAirports · Mapa: © OpenStreetMap · Horas de Monterrey · v4`;
 }
 
-function drawList(list){
-  const el=document.getElementById("list");
-  if(!FL.length){ el.innerHTML='<div class="empty">Aún no hay vuelos guardados. Corre el workflow “Actualizar vuelos XA-UWK” en GitHub Actions.</div>'; return; }
-  if(!list.length){ el.innerHTML='<div class="empty">Ningún vuelo coincide con el filtro.</div>'; return; }
-  el.innerHTML = list.slice(0,shown).map(f=>{ const a=apInfo(f.dep), b=apInfo(f.arr), id=f.firstSeen;
-    const day=new Date(f.firstSeen*1000).toISOString().slice(0,10);
-    return `<div class="fl${selId===id?" sel":""}" data-id="${id}">
-      <div class="top"><span>${esc(fmtD.format(new Date(f.firstSeen*1000)))}</span><span>${f.callsign?esc(f.callsign):""}</span></div>
-      <div class="rt">
-        <div class="ap">${esc(f.dep||"???")}<small>${esc(a.city||a.name)}</small></div>
-        <div class="mid"><svg viewBox="0 0 24 24" style="transform:rotate(90deg)"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg>${dur(f.lastSeen-f.firstSeen)}</div>
-        <div class="ap r">${esc(f.arr||"???")}<small>${esc(b.city||b.name)}</small></div>
-      </div>
-      <div class="times"><span>Despegue ${fmtT.format(new Date(f.firstSeen*1000))}</span><span>Aterrizaje ${fmtT.format(new Date(f.lastSeen*1000))}</span></div>
-      <div class="more">
-        <div>${esc(a.name)} → ${esc(b.name)}</div>
-        <a class="btn" href="https://globe.adsbexchange.com/?icao=0d0929&showTrace=${day}" target="_blank" rel="noopener">Ver trayectoria del día</a>
-      </div></div>`; }).join("") + (list.length>shown? `<a class="btn" id="more" href="#" style="display:block;text-align:center">Ver más (${list.length-shown} restantes)</a>`:"");
-}
-
-function filtered(){
-  const q=document.getElementById("q").value.trim().toLowerCase();
-  const m=document.getElementById("m").value;
-  return FL.filter(f=>{
-    if(m && monthKey(f.firstSeen)!==m) return false;
-    if(!q) return true;
-    return [f.dep,f.arr].some(c=>{ const a=apInfo(c); return [c,a.name,a.city,a.iata].some(v=>v&&String(v).toLowerCase().includes(q)); });
-  });
-}
-
-function render(){ shown=25; const l=filtered(); drawKPIs(l); drawBars(l); drawRoutes(l); drawList(l); drawMap(l); highlight(l.find(f=>f.firstSeen===selId)); }
-
-document.getElementById("list").addEventListener("click",e=>{
-  if(e.target.id==="more"){ e.preventDefault(); shown+=25; drawList(filtered()); return; }
-  if(e.target.closest("a")) return;
-  const c=e.target.closest(".fl"); if(!c) return;
-  const id=+c.dataset.id; selId = selId===id? null : id;
-  drawList(filtered()); highlight(FL.find(f=>f.firstSeen===selId));
-  if(selId) document.getElementById("map").scrollIntoView({behavior:"smooth",block:"center"});
-});
-document.getElementById("q").addEventListener("input",render);
-document.getElementById("m").addEventListener("change",render);
-
-(async()=>{
-  initMap();
-  const [fl,ap,live,meta] = await Promise.all([getJSON("data/flights.json",[]),getJSON("data/airports.json",{}),getJSON("data/live.json",{}),getJSON("data/meta.json",{})]);
-  FL=(fl||[]).sort((a,b)=>b.firstSeen-a.firstSeen); AP=ap||{};
-  const months=[...new Set(FL.map(f=>monthKey(f.firstSeen)))].sort().reverse();
-  document.getElementById("m").insertAdjacentHTML("beforeend",months.map(k=>{ const [y,m]=k.split("-");
-    return `<option value="${k}">${esc(new Intl.DateTimeFormat("es-MX",{month:"long",year:"numeric"}).format(new Date(Date.UTC(+y,+m-1,15))))}</option>`; }).join(""));
-  if(meta && meta.updated) document.getElementById("upd").textContent = fmtShort.format(new Date(meta.updated*1000))+" "+fmtT.format(new Date(meta.updated*1000));
-  if(meta && meta.history_from){ const [y,mo,d]=meta.history_from.split("-");
-    document.getElementById("hist").textContent = new Intl.DateTimeFormat("es-MX",{day:"2-digit",month:"short",year:"numeric",timeZone:"UTC"}).format(new Date(Date.UTC(+y,+mo-1,+d)))
-      + (meta.history_complete? "" : " (cargando hasta 1 año)"); }
-  const s = live && live.state; const lv=document.getElementById("live");
-  if(s && !s.on_ground && Date.now()/1000 - live.checked < 7200){
-    lv.textContent = `En vuelo · ${Math.round((s.alt_m||0)*3.281/100)*100} ft`; lv.classList.add("on");
-    if(s.lat!=null && map) L.circleMarker([s.lat,s.lon],{radius:7,color:"#3ddc97",fillColor:"#3ddc97",fillOpacity:1}).bindPopup("Última posición").addTo(map);
-  } else if(s){ lv.textContent="En tierra"; }
+/* ---------- eventos ---------- */
+document.getElementById("periods").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  S.p = b.dataset.p; S.shown = 40;
+  if (S.p === "custom"){
+    const [a,c] = range(); S.from = S.from || a; S.to = S.to || c;
+    document.getElementById("dFrom").value = S.from; document.getElementById("dTo").value = S.to;
+  }
   render();
+});
+["dFrom","dTo"].forEach(id => document.getElementById(id).addEventListener("change", () => {
+  S.from = document.getElementById("dFrom").value || S.from;
+  S.to = document.getElementById("dTo").value || S.to;
+  S.shown = 40; render();
+}));
+document.getElementById("apSel").addEventListener("change", e => { S.ap = e.target.value; S.shown = 40; render(); });
+document.getElementById("summary").addEventListener("click", e => { if (e.target.dataset.clr === "ap"){ S.ap = ""; render(); } });
+document.getElementById("bars").addEventListener("click", e => {
+  const b = e.target.closest(".bar"); if (!b) return;
+  const m = b.dataset.m; S.p = "custom"; S.from = m+"-01"; S.to = addDays(addDays(m+"-01",40).slice(0,7)+"-01",-1);
+  document.getElementById("dFrom").value = S.from; document.getElementById("dTo").value = S.to;
+  S.shown = 40; render();
+  window.scrollTo({top:0, behavior:"smooth"});
+});
+document.getElementById("aps").addEventListener("click", e => {
+  const li = e.target.closest("li[data-ap]"); if (!li) return;
+  S.ap = S.ap === li.dataset.ap ? "" : li.dataset.ap; S.shown = 40; render();
+});
+document.getElementById("list").addEventListener("click", e => {
+  if (e.target.id === "more"){ S.shown += 40; drawList(filtered()); return; }
+  if (e.target.closest("a")) return;
+  const c = e.target.closest(".fl"); if (!c) return;
+  select(Number(c.dataset.id), "list");
+});
+document.getElementById("selbox").addEventListener("click", e => {
+  const a = e.target.dataset.act;
+  if (a === "clear"){ S.sel = null; styleFlights(); selBox(); drawList(filtered()); drawMap(filtered()); }
+  if (a === "detail"){ const el = document.querySelector(`.fl[data-id="${S.sel}"]`); if (el) el.scrollIntoView({behavior:"smooth", block:"center"}); }
+});
+document.getElementById("map").addEventListener("click", e => {
+  const a = e.target.closest("a[data-ap]"); if (!a) return;
+  e.preventDefault(); S.ap = a.dataset.ap; S.shown = 40; render();
+});
+window.addEventListener("resize", () => { setFH(); if (map) map.invalidateSize(); });
+
+(async () => {
+  initMap();
+  const [fl, ap, meta, live] = await Promise.all([
+    getJSON("data/flights.json", []), getJSON("data/airports.json", {}),
+    getJSON("data/meta.json", {}), getJSON("data/live.json", {})]);
+  FL = (Array.isArray(fl) ? fl : []).filter(f => f && f.off).sort((a,b) => b.off - a.off);
+  AP = ap || {}; META = meta || {}; LIVE = live || {};
+  const ops = {};
+  FL.forEach(f => [f.dep,f.arr].forEach(c => { if (c) ops[c] = (ops[c]||0)+1; }));
+  document.getElementById("apSel").insertAdjacentHTML("beforeend",
+    Object.entries(ops).sort((a,b) => b[1]-a[1]).map(([c,n]) =>
+      `<option value="${esc(c)}">${esc(c)} · ${esc(apFull(c))} (${n})</option>`).join(""));
+  drawStatus(); drawFoot(); render();
 })();
 
-if("serviceWorker" in navigator){
+if ("serviceWorker" in navigator){
   const hadController = !!navigator.serviceWorker.controller;
   let reloaded = false;
-  navigator.serviceWorker.addEventListener("controllerchange",()=>{ if(hadController && !reloaded){ reloaded=true; location.reload(); } });
-  navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>r.update()).catch(()=>{});
+  navigator.serviceWorker.addEventListener("controllerchange", () => { if (hadController && !reloaded){ reloaded = true; location.reload(); } });
+  navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r => r.update()).catch(() => {});
 }
 </script>
 </body>

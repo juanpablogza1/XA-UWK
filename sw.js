@@ -1,6 +1,6 @@
-// v3: la app y los datos siempre se piden a la red primero (revalidando),
+// v4: la app y los datos siempre se piden a la red primero (revalidando),
 // el cache solo se usa sin conexion.
-const C = "xauwk-v3";
+const C = "xauwk-v4";
 const LEAFLET = ["https://unpkg.com/leaflet@1.9.4/dist/leaflet.css", "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"];
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icons/icon-192.png"];
 self.addEventListener("install", e => {

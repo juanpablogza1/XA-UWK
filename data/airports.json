@@ -1,59 +1,23 @@
 {
- "2TS2": {
-  "name": "Shofner Farms Airport",
-  "city": "Harlingen",
+ "KBRO": {
+  "name": "Brownsville South Padre Island International Airport",
+  "city": "Brownsville",
   "country": "US",
-  "iata": "",
-  "lat": 26.168862,
-  "lon": -97.733055
+  "iata": "BRO",
+  "lat": 25.907238,
+  "lon": -97.425235,
+  "type": "medium_airport",
+  "elev": 22
  },
- "KLRD": {
-  "name": "Laredo International Airport",
-  "city": "Laredo",
+ "KCLL": {
+  "name": "Easterwood Field",
+  "city": "College Station",
   "country": "US",
-  "iata": "LRD",
-  "lat": 27.5438,
-  "lon": -99.461601
- },
- "KPWA": {
-  "name": "Wiley Post Airport",
-  "city": "Oklahoma City",
-  "country": "US",
-  "iata": "PWA",
-  "lat": 35.53419876,
-  "lon": -97.64710236
- },
- "KSAT": {
-  "name": "San Antonio International Airport",
-  "city": "San Antonio",
-  "country": "US",
-  "iata": "SAT",
-  "lat": 29.533701,
-  "lon": -98.469803
- },
- "MMAN": {
-  "name": "Del Norte International Airport",
-  "city": "Monterrey",
-  "country": "MX",
-  "iata": "NTR",
-  "lat": 25.865601,
-  "lon": -100.237
- },
- "MMMA": {
-  "name": "General Servando Canales International Airport",
-  "city": "Matamoros",
-  "country": "MX",
-  "iata": "MAM",
-  "lat": 25.7698993683,
-  "lon": -97.5252990723
- },
- "TS05": {
-  "name": "La Buena Vida Airport",
-  "city": "Woodsboro",
-  "country": "US",
-  "iata": "",
-  "lat": 28.150459,
-  "lon": -97.381139
+  "iata": "CLL",
+  "lat": 30.5886,
+  "lon": -96.3638,
+  "type": "medium_airport",
+  "elev": 320
  },
  "KFTY": {
   "name": "Fulton County Airport Brown Field",
@@ -61,7 +25,19 @@
   "country": "US",
   "iata": "FTY",
   "lat": 33.7790985107,
-  "lon": -84.5214004517
+  "lon": -84.5214004517,
+  "type": "medium_airport",
+  "elev": 841
+ },
+ "KGKY": {
+  "name": "Arlington Municipal Airport",
+  "city": "Arlington",
+  "country": "US",
+  "iata": "",
+  "lat": 32.66389846801758,
+  "lon": -97.09429931640625,
+  "type": "small_airport",
+  "elev": 628
  },
  "KHOU": {
   "name": "William P. Hobby Airport",
@@ -69,7 +45,209 @@
   "country": "US",
   "iata": "HOU",
   "lat": 29.645336,
-  "lon": -95.276812
+  "lon": -95.276812,
+  "type": "large_airport",
+  "elev": 46
+ },
+ "KHRL": {
+  "name": "Valley International Airport",
+  "city": "Harlingen",
+  "country": "US",
+  "iata": "HRL",
+  "lat": 26.228500366210938,
+  "lon": -97.65440368652344,
+  "type": "medium_airport",
+  "elev": 36
+ },
+ "KLRD": {
+  "name": "Laredo International Airport",
+  "city": "Laredo",
+  "country": "US",
+  "iata": "LRD",
+  "lat": 27.5438,
+  "lon": -99.461601,
+  "type": "medium_airport",
+  "elev": 508
+ },
+ "KMFE": {
+  "name": "McAllen Miller International Airport",
+  "city": "McAllen",
+  "country": "US",
+  "iata": "MFE",
+  "lat": 26.176141,
+  "lon": -98.237965,
+  "type": "medium_airport",
+  "elev": 107
+ },
+ "KPWA": {
+  "name": "Wiley Post Airport",
+  "city": "Oklahoma City",
+  "country": "US",
+  "iata": "PWA",
+  "lat": 35.53419876,
+  "lon": -97.64710236,
+  "type": "small_airport",
+  "elev": 1300
+ },
+ "KRVS": {
+  "name": "Tulsa Riverside Airport",
+  "city": "Tulsa",
+  "country": "US",
+  "iata": "RVS",
+  "lat": 36.0396,
+  "lon": -95.984596,
+  "type": "medium_airport",
+  "elev": 638
+ },
+ "KSAT": {
+  "name": "San Antonio International Airport",
+  "city": "San Antonio",
+  "country": "US",
+  "iata": "SAT",
+  "lat": 29.533701,
+  "lon": -98.469803,
+  "type": "large_airport",
+  "elev": 809
+ },
+ "KTXW": {
+  "name": "Mid Valley International Airport",
+  "city": "Weslaco",
+  "country": "US",
+  "iata": "",
+  "lat": 26.177601,
+  "lon": -97.973098,
+  "type": "small_airport",
+  "elev": 70
+ },
+ "MM62": {
+  "name": "Aeródromo Zacacoyuca",
+  "city": "Iguala de la Independencia",
+  "country": "MX",
+  "iata": "",
+  "lat": 18.26992,
+  "lon": -99.517491,
+  "type": "small_airport",
+  "elev": 2890
+ },
+ "MMAN": {
+  "name": "Del Norte International Airport",
+  "city": "Monterrey",
+  "country": "MX",
+  "iata": "NTR",
+  "lat": 25.865601,
+  "lon": -100.237,
+  "type": "medium_airport",
+  "elev": 1476
+ },
+ "MMAS": {
+  "name": "Aguascalientes International Airport",
+  "city": "Aguascalientes",
+  "country": "MX",
+  "iata": "AGU",
+  "lat": 21.699589,
+  "lon": -102.318372,
+  "type": "large_airport",
+  "elev": 6112
+ },
+ "MMCB": {
+  "name": "General Mariano Matamoros International Airport",
+  "city": "Temixco",
+  "country": "MX",
+  "iata": "CVJ",
+  "lat": 18.833922,
+  "lon": -99.261818,
+  "type": "medium_airport",
+  "elev": 4277
+ },
+ "MMCL": {
+  "name": "Bachigualato Federal International Airport",
+  "city": "Culiacán",
+  "country": "MX",
+  "iata": "CUL",
+  "lat": 24.76504,
+  "lon": -107.475228,
+  "type": "large_airport",
+  "elev": 108
+ },
+ "MMCY": {
+  "name": "Captain Rogelio Castillo National Airport",
+  "city": "Celaya",
+  "country": "MX",
+  "iata": "CYW",
+  "lat": 20.545998,
+  "lon": -100.886539,
+  "type": "medium_airport",
+  "elev": 5709
+ },
+ "MMDO": {
+  "name": "General Guadalupe Victoria International Airport",
+  "city": "Durango",
+  "country": "MX",
+  "iata": "DGO",
+  "lat": 24.125468,
+  "lon": -104.527938,
+  "type": "medium_airport",
+  "elev": 6104
+ },
+ "MMEP": {
+  "name": "Amado Nervo National Airport",
+  "city": "Tepic",
+  "country": "MX",
+  "iata": "TPQ",
+  "lat": 21.419833,
+  "lon": -104.842472,
+  "type": "medium_airport",
+  "elev": 3020
+ },
+ "MMGL": {
+  "name": "Guadalajara International Airport",
+  "city": "Guadalajara",
+  "country": "MX",
+  "iata": "GDL",
+  "lat": 20.523342,
+  "lon": -103.310108,
+  "type": "large_airport",
+  "elev": 5016
+ },
+ "MMLO": {
+  "name": "Guanajuato International Airport",
+  "city": "Silao",
+  "country": "MX",
+  "iata": "BJX",
+  "lat": 20.992695,
+  "lon": -101.480284,
+  "type": "large_airport",
+  "elev": 5956
+ },
+ "MMMA": {
+  "name": "General Servando Canales International Airport",
+  "city": "Matamoros",
+  "country": "MX",
+  "iata": "MAM",
+  "lat": 25.7698993683,
+  "lon": -97.5252990723,
+  "type": "medium_airport",
+  "elev": 25
+ },
+ "MMMM": {
+  "name": "General Francisco J. Mujica International Airport",
+  "city": "Morelia",
+  "country": "MX",
+  "iata": "MLM",
+  "lat": 19.849899,
+  "lon": -101.025002,
+  "type": "large_airport",
+  "elev": 6033
+ },
+ "MMMV": {
+  "name": "Monclova International Airport",
+  "city": "Monclova",
+  "country": "MX",
+  "iata": "LOV",
+  "lat": 26.9557,
+  "lon": -101.470001,
+  "type": "medium_airport",
+  "elev": 1864
  },
  "MMMY": {
   "name": "Monterrey International Airport",
@@ -77,6 +255,158 @@
   "country": "MX",
   "iata": "MTY",
   "lat": 25.778521,
-  "lon": -100.106989
+  "lon": -100.106989,
+  "type": "large_airport",
+  "elev": 1278
+ },
+ "MMMZ": {
+  "name": "General Rafael Buelna International Airport",
+  "city": "Mazatlàn",
+  "country": "MX",
+  "iata": "MZT",
+  "lat": 23.162823,
+  "lon": -106.264517,
+  "type": "large_airport",
+  "elev": 38
+ },
+ "MMOO": {
+  "name": "Francisco Primo de Verdad y Ramos Airport",
+  "city": "Lagos de Moreno",
+  "country": "MX",
+  "iata": "LOM",
+  "lat": 21.258983,
+  "lon": -101.943758,
+  "type": "small_airport",
+  "elev": 6227
+ },
+ "MMQT": {
+  "name": "Querétaro Intercontinental Airport",
+  "city": "Querétaro",
+  "country": "MX",
+  "iata": "QRO",
+  "lat": 20.618779,
+  "lon": -100.186449,
+  "type": "large_airport",
+  "elev": 6296
+ },
+ "MMRX": {
+  "name": "General Lucio Blanco International Airport",
+  "city": "Reynosa",
+  "country": "MX",
+  "iata": "REX",
+  "lat": 26.0089,
+  "lon": -98.2285,
+  "type": "medium_airport",
+  "elev": 139
+ },
+ "MMSP": {
+  "name": "Ponciano Arriaga International Airport",
+  "city": "San Luis Potosí",
+  "country": "MX",
+  "iata": "SLP",
+  "lat": 22.262026,
+  "lon": -100.935692,
+  "type": "medium_airport",
+  "elev": 6035
+ },
+ "MMTC": {
+  "name": "Francisco Sarabia Tinoco International Airport",
+  "city": "Torreón",
+  "country": "MX",
+  "iata": "TRC",
+  "lat": 25.562265,
+  "lon": -103.404608,
+  "type": "medium_airport",
+  "elev": 3688
+ },
+ "MMTO": {
+  "name": "Adolfo López Mateos International Airport",
+  "city": "Toluca",
+  "country": "MX",
+  "iata": "TLC",
+  "lat": 19.3369,
+  "lon": -99.56583,
+  "type": "large_airport",
+  "elev": 8466
+ },
+ "MMTQ": {
+  "name": "Tequesquitengo Airport",
+  "city": "Puente de Ixtla",
+  "country": "MX",
+  "iata": "",
+  "lat": 18.646707,
+  "lon": -99.261595,
+  "type": "small_airport",
+  "elev": 3271
+ },
+ "MMZC": {
+  "name": "General Leobardo C. Ruiz International Airport",
+  "city": "Zacatecas",
+  "country": "MX",
+  "iata": "ZCL",
+  "lat": 22.894942,
+  "lon": -102.687154,
+  "type": "medium_airport",
+  "elev": 7141
+ },
+ "MX-0113": {
+  "name": "Aeropista de la Región Carbonífera",
+  "city": "Sabinas",
+  "country": "MX",
+  "iata": "",
+  "lat": 27.9746,
+  "lon": -101.2125,
+  "type": "small_airport",
+  "elev": 1300
+ },
+ "MX-0225": {
+  "name": "Palula Airport",
+  "city": "Real del Catorce",
+  "country": "MX",
+  "iata": "",
+  "lat": 23.809294,
+  "lon": -101.408446,
+  "type": "small_airport",
+  "elev": 7070
+ },
+ "MX-0231": {
+  "name": "Santa Ana de Vanegas Airport",
+  "city": "Vanegas",
+  "country": "MX",
+  "iata": "",
+  "lat": 24.171264,
+  "lon": -100.912954,
+  "type": "small_airport",
+  "elev": 5630
+ },
+ "MX-0254": {
+  "name": "Aeródromo de Taxco",
+  "city": "Taxco de Alarcón",
+  "country": "MX",
+  "iata": "",
+  "lat": 18.573098,
+  "lon": -99.595683,
+  "type": "small_airport",
+  "elev": 6265
+ },
+ "MX-1360": {
+  "name": "Charcas Airport",
+  "city": "Charcas",
+  "country": "MX",
+  "iata": "",
+  "lat": 23.14738,
+  "lon": -101.12137,
+  "type": "small_airport",
+  "elev": null
+ },
+ "US-5806": {
+  "name": "Alamo Aerial Applicators Airport",
+  "city": "Alamo",
+  "country": "US",
+  "iata": "",
+  "lat": 26.09342,
+  "lon": -98.11185,
+  "type": "small_airport",
+  "elev": 84
  }
 }
