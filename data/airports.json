@@ -1,1 +1,58 @@
-{}
+{
+ "2TS2": {
+  "name": "Shofner Farms Airport",
+  "city": "Harlingen",
+  "country": "US",
+  "iata": "",
+  "lat": 26.168862,
+  "lon": -97.733055
+ },
+ "KLRD": {
+  "name": "Laredo International Airport",
+  "city": "Laredo",
+  "country": "US",
+  "iata": "LRD",
+  "lat": 27.5438,
+  "lon": -99.461601
+ },
+ "KPWA": {
+  "name": "Wiley Post Airport",
+  "city": "Oklahoma City",
+  "country": "US",
+  "iata": "PWA",
+  "lat": 35.53419876,
+  "lon": -97.64710236
+ },
+ "KSAT": {
+  "name": "San Antonio International Airport",
+  "city": "San Antonio",
+  "country": "US",
+  "iata": "SAT",
+  "lat": 29.533701,
+  "lon": -98.469803
+ },
+ "MMAN": {
+  "name": "Del Norte International Airport",
+  "city": "Monterrey",
+  "country": "MX",
+  "iata": "NTR",
+  "lat": 25.865601,
+  "lon": -100.237
+ },
+ "MMMA": {
+  "name": "General Servando Canales International Airport",
+  "city": "Matamoros",
+  "country": "MX",
+  "iata": "MAM",
+  "lat": 25.7698993683,
+  "lon": -97.5252990723
+ },
+ "TS05": {
+  "name": "La Buena Vida Airport",
+  "city": "Woodsboro",
+  "country": "US",
+  "iata": "",
+  "lat": 28.150459,
+  "lon": -97.381139
+ }
+}
