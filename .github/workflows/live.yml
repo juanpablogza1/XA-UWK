@@ -1,0 +1,31 @@
+name: Seguimiento en vivo XA-UWK
+
+# Sigue al avion mientras vuela: consulta su posicion cada 10 s y la publica
+# en la rama 'live' (la app la lee cada 10 s). Lo inicia la app ("Seguir en
+# vivo") o la actualizacion programada cuando detecta que el avion esta volando.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: live-track
+  cancel-in-progress: false
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: scripts
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Seguir el avion
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MAX_MINUTES: "300"
+        run: python -u scripts/live_track.py

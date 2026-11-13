@@ -28,9 +28,13 @@ App: https://juanpablogza1.github.io/XA-UWK/
 
 Cada estimación trae su confianza (alta, media o baja) y, si es baja, las alternativas más probables. En zonas sin receptores ADS-B, como el centro de México, el destino real no se puede confirmar; la app lo marca como incierto (`¿?`).
 
-## Actualización
+## Actualización y seguimiento en vivo
 
-`.github/workflows/update.yml` corre cada 3 horas: descarga los días nuevos de adsb.lol (se publican al día siguiente), reconstruye los vuelos y hace commit en `data/` solo si hubo cambios. También se puede correr a mano desde *Actions → Actualizar vuelos XA-UWK → Run workflow*.
+- `.github/workflows/update.yml` corre cada 30 min: descarga los días nuevos de adsb.lol (se publican al día siguiente), reconstruye los vuelos, revisa la posición actual y hace commit en `data/` solo si hubo cambios. Si el avión está volando, inicia el seguimiento en vivo.
+- `.github/workflows/live.yml` sigue al avión mientras vuela: consulta su posición cada 10 s (api.adsb.lol, respaldo adsb.fi) y la publica en la rama `live` (un solo commit que se reemplaza). Termina 75 min después de aterrizar si no vuelve a despegar.
+- En la app: el botón ⟳ lanza la actualización y recarga los datos al terminar; la tarjeta **En vivo** muestra altitud, velocidad, rumbo y el avión en el mapa; **Hoy** lista los vuelos seguidos en el día.
+
+Para usar los botones desde la app hace falta un *fine-grained token* de GitHub (Ajustes ⚙︎ en la app): solo el repositorio XA-UWK, permisos **Actions: Read and write** y **Contents: Read-only**. Se guarda únicamente en el dispositivo. Sin token, la app igual muestra el vivo (con unos minutos de retraso) y los datos se actualizan solos.
 
 Los secrets de OpenSky (`OPENSKY_CLIENT_ID`, `OPENSKY_CLIENT_SECRET`) ya no se usan y se pueden borrar.
 

@@ -1,14 +1,16 @@
 name: Actualizar vuelos XA-UWK
 
-# Descarga del historial abierto de adsb.lol los dias nuevos (se publican a diario)
-# y reconstruye los vuelos. La primera corrida puede tardar ~30 min (un año).
+# Descarga del historial abierto de adsb.lol los dias nuevos (se publican a diario),
+# reconstruye los vuelos y revisa la posicion actual. Si el avion esta volando,
+# inicia el seguimiento en vivo (live.yml). Tambien se lanza desde la app.
 on:
   schedule:
-    - cron: "23 */3 * * *"   # cada 3 horas
+    - cron: "7,37 * * * *"   # cada 30 min
   workflow_dispatch:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: update-flights
@@ -39,4 +41,15 @@ jobs:
             git commit -m "Actualizar vuelos XA-UWK"
             git pull --rebase origin main
             git push
+          fi
+      - name: Iniciar seguimiento en vivo si el avion esta volando
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          volando=$(python3 -c "import json,time; l=json.load(open('data/live.json')).get('last') or {}; print(1 if l and not l.get('ground') and not l.get('historic') and time.time()-l.get('t',0) < 900 else 0)")
+          if [ "$volando" = "1" ]; then
+            activos=$(gh run list --workflow live.yml --json status --jq '[.[] | select(.status=="in_progress" or .status=="queued")] | length')
+            if [ "$activos" = "0" ]; then gh workflow run live.yml && echo "Seguimiento en vivo iniciado"; else echo "Seguimiento ya activo"; fi
+          else
+            echo "El avion no esta volando"
           fi
