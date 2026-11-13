@@ -103,5 +103,201 @@
   "dep": "MMAN",
   "arr": null,
   "callsign": "XAUWK"
+ },
+ {
+  "firstSeen": 1789164707,
+  "lastSeen": 1789166045,
+  "dep": null,
+  "arr": "MMAN",
+  "callsign": "XAUWK"
+ },
+ {
+  "firstSeen": 1789150019,
+  "lastSeen": 1789151505,
+  "dep": "MMAN",
+  "arr": null,
+  "callsign": "XAUWK"
+ },
+ {
+  "firstSeen": 1788906374,
+  "lastSeen": 1788907867,
+  "dep": null,
+  "arr": "MMAN",
+  "callsign": "XAUWK"
+ },
+ {
+  "firstSeen": 1788878470,
+  "lastSeen": 1788879809,
+  "dep": "MMAN",
+  "arr": null,
+  "callsign": "XAUWK"
+ },
+ {
+  "firstSeen": 1788213574,
+  "lastSeen": 1788215952,
+  "dep": null,
+  "arr": "MMAN",
+  "callsign": "XAUWK"
+ },
+ {
+  "firstSeen": 1788189656,
+  "lastSeen": 1788191749,
+  "dep": "MMAN",
+  "arr": null,
+  "callsign": "XAUWK"
+ },
+ {
+  "firstSeen": 1788132134,
+  "lastSeen": 1788134475,
+  "dep": null,
+  "arr": "MMAN",
+  "callsign": "XAUWK"
+ },
+ {
+  "firstSeen": 1788122362,
+  "lastSeen": 1788124558,
+  "dep": "MMAN",
+  "arr": null,
+  "callsign": "XAUWK"
+ },
+ {
+  "firstSeen": 1788117336,
+  "lastSeen": 1788119592,
+  "dep": null,
+  "arr": "MMAN",
+  "callsign": "XAUWK"
+ },
+ {
+  "firstSeen": 1788109810,
+  "lastSeen": 1788111867,
+  "dep": "MMAN",
+  "arr": null,
+  "callsign": "XAUWK"
+ },
+ {
+  "firstSeen": 1787968399,
+  "lastSeen": 1787970908,
+  "dep": null,
+  "arr": "MMAN",
+  "callsign": "XAUWK"
+ },
+ {
+  "firstSeen": 1787961819,
+  "lastSeen": 1787964092,
+  "dep": "MMAN",
+  "arr": null,
+  "callsign": "XAUWK"
+ },
+ {
+  "firstSeen": 1787947538,
+  "lastSeen": 1787949847,
+  "dep": null,
+  "arr": "MMAN",
+  "callsign": "XAUWK"
+ },
+ {
+  "firstSeen": 1787931816,
+  "lastSeen": 1787934157,
+  "dep": "MMAN",
+  "arr": "TS05",
+  "callsign": "XAUWK"
+ },
+ {
+  "firstSeen": 1787855907,
+  "lastSeen": 1787858148,
+  "dep": null,
+  "arr": "MMAN",
+  "callsign": "XAUWK"
+ },
+ {
+  "firstSeen": 1787848522,
+  "lastSeen": 1787850475,
+  "dep": "MMAN",
+  "arr": null,
+  "callsign": "XAUWK"
+ },
+ {
+  "firstSeen": 1786818152,
+  "lastSeen": 1786820501,
+  "dep": null,
+  "arr": "MMAN",
+  "callsign": "XAUWK"
+ },
+ {
+  "firstSeen": 1786809627,
+  "lastSeen": 1786811871,
+  "dep": "MMAN",
+  "arr": "TS05",
+  "callsign": "XAUWK"
+ },
+ {
+  "firstSeen": 1786558561,
+  "lastSeen": 1786560843,
+  "dep": null,
+  "arr": "MMAN",
+  "callsign": "XAUWK"
+ },
+ {
+  "firstSeen": 1786548087,
+  "lastSeen": 1786550271,
+  "dep": "MMAN",
+  "arr": null,
+  "callsign": "XAUWK"
+ },
+ {
+  "firstSeen": 1786224720,
+  "lastSeen": 1786226607,
+  "dep": null,
+  "arr": "MMAN",
+  "callsign": "XAUWK"
+ },
+ {
+  "firstSeen": 1786198087,
+  "lastSeen": 1786199826,
+  "dep": "MMAN",
+  "arr": null,
+  "callsign": "XAUWK"
+ },
+ {
+  "firstSeen": 1786131473,
+  "lastSeen": 1786134069,
+  "dep": null,
+  "arr": "MMAN",
+  "callsign": "XAUWK"
+ },
+ {
+  "firstSeen": 1786117394,
+  "lastSeen": 1786119654,
+  "dep": "MMAN",
+  "arr": null,
+  "callsign": "XAUWK"
+ },
+ {
+  "firstSeen": 1785653073,
+  "lastSeen": 1785654634,
+  "dep": null,
+  "arr": "MMAN",
+  "callsign": "XAUWK"
+ },
+ {
+  "firstSeen": 1785644417,
+  "lastSeen": 1785646074,
+  "dep": "MMMY",
+  "arr": null,
+  "callsign": "XAUWK"
+ },
+ {
+  "firstSeen": 1784179772,
+  "lastSeen": 1784185938,
+  "dep": "KHOU",
+  "arr": "MMAN",
+  "callsign": "XAUWK"
+ },
+ {
+  "firstSeen": 1784162834,
+  "lastSeen": 1784172885,
+  "dep": "KFTY",
+  "arr": "KHOU",
+  "callsign": "XAUWK"
  }
 ]

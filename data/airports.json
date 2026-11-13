@@ -54,5 +54,29 @@
   "iata": "",
   "lat": 28.150459,
   "lon": -97.381139
+ },
+ "KFTY": {
+  "name": "Fulton County Airport Brown Field",
+  "city": "Atlanta",
+  "country": "US",
+  "iata": "FTY",
+  "lat": 33.7790985107,
+  "lon": -84.5214004517
+ },
+ "KHOU": {
+  "name": "William P. Hobby Airport",
+  "city": "Houston",
+  "country": "US",
+  "iata": "HOU",
+  "lat": 29.645336,
+  "lon": -95.276812
+ },
+ "MMMY": {
+  "name": "Monterrey International Airport",
+  "city": "Monterrey",
+  "country": "MX",
+  "iata": "MTY",
+  "lat": 25.778521,
+  "lon": -100.106989
  }
 }
