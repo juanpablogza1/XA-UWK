@@ -23,7 +23,6 @@ TOKEN_URL = ("https://auth.opensky-network.org/auth/realms/opensky-network/"
              "protocol/openid-connect/token")
 AIRPORTS_CSV = ("https://raw.githubusercontent.com/davidmegginson/"
                 "ourairports-data/main/airports.csv")
-CHUNK = 2 * 86400  # OpenSky limita el intervalo por consulta
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "data")
@@ -123,10 +122,14 @@ def main():
     before = len(flights)
     errors = 0
 
-    end = now
-    start_limit = now - days * 86400
-    while end > start_limit:
-        begin = max(start_limit, end - CHUNK)
+    # OpenSky particiona por dia UTC y solo permite 2 particiones por consulta.
+    # Ventanas de 2 dias alineadas a medianoche UTC, avanzando 1 dia, para
+    # que los vuelos que cruzan la medianoche UTC tambien se capturen.
+    today = now - now % 86400
+    for i in range(days):
+        day = today - i * 86400
+        begin = day - 86400
+        end = min(now, day + 86400 - 1)
         res = api_get("/flights/aircraft",
                       {"icao24": ICAO24, "begin": begin, "end": end}, token)
         if res is None:
@@ -140,7 +143,6 @@ def main():
                     "arr": f.get("estArrivalAirport"),
                     "callsign": (f.get("callsign") or "").strip(),
                 }
-        end = begin
         time.sleep(1)
 
     ordered = sorted(flights.values(), key=lambda f: f["firstSeen"], reverse=True)
