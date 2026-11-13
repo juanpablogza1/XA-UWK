@@ -2,9 +2,22 @@
 """Descarga el historial de vuelos de XA-UWK (ICAO24 0d0929) desde OpenSky
 y lo acumula en data/flights.json. Pensado para correr en GitHub Actions.
 
+Cada corrida:
+  1. Consulta los ultimos RECENT_DAYS dias (vuelos nuevos).
+  2. Sigue cargando el historial hacia atras hasta cubrir HISTORY_DAYS,
+     con un maximo de MAX_BACKFILL consultas por corrida. El avance se
+     guarda en data/meta.json, asi que el año completo se completa en
+     varias corridas sin pasarse del limite diario de creditos.
+
+OpenSky cobra 30 creditos por consulta de 1-2 dias y limita los creditos
+por dia; si responde 429 el script se detiene y continua en la siguiente
+corrida.
+
 Variables de entorno:
   OPENSKY_CLIENT_ID / OPENSKY_CLIENT_SECRET  credenciales OAuth2 de OpenSky
-  BACKFILL_DAYS                              dias hacia atras a consultar (default 4)
+  HISTORY_DAYS   dias de historial a cubrir (default 365)
+  RECENT_DAYS    dias recientes a re-consultar en cada corrida (default 3)
+  MAX_BACKFILL   consultas de historial por corrida (default 25)
 """
 import csv
 import io
@@ -23,6 +36,7 @@ TOKEN_URL = ("https://auth.opensky-network.org/auth/realms/opensky-network/"
              "protocol/openid-connect/token")
 AIRPORTS_CSV = ("https://raw.githubusercontent.com/davidmegginson/"
                 "ourairports-data/main/airports.csv")
+DAY = 86400
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "data")
@@ -30,6 +44,17 @@ F_FLIGHTS = os.path.join(DATA, "flights.json")
 F_AIRPORTS = os.path.join(DATA, "airports.json")
 F_LIVE = os.path.join(DATA, "live.json")
 F_META = os.path.join(DATA, "meta.json")
+
+
+class RateLimited(Exception):
+    pass
+
+
+def env_int(name, default):
+    try:
+        return int(os.environ.get(name) or default)
+    except ValueError:
+        return default
 
 
 def load(path, default):
@@ -44,6 +69,10 @@ def save(path, obj):
     with open(path, "w", encoding="utf-8") as f:
         json.dump(obj, f, ensure_ascii=False, indent=1)
         f.write("\n")
+
+
+def iso_day(t):
+    return datetime.fromtimestamp(t, timezone.utc).strftime("%Y-%m-%d")
 
 
 def get_token():
@@ -64,9 +93,11 @@ def get_token():
 
 
 def api_get(path, params, token):
+    """Devuelve el JSON, [] si no hay datos, None si hay error.
+    Lanza RateLimited si se acabaron los creditos del dia."""
     url = f"{API}{path}?{urllib.parse.urlencode(params)}"
     headers = {"Authorization": f"Bearer {token}"} if token else {}
-    for attempt in range(3):
+    for _ in range(3):
         try:
             with urllib.request.urlopen(
                     urllib.request.Request(url, headers=headers), timeout=60) as r:
@@ -76,8 +107,11 @@ def api_get(path, params, token):
                 return []
             if e.code == 429:
                 wait = int(e.headers.get("X-Rate-Limit-Retry-After-Seconds", 60))
-                print(f"Limite de creditos, esperando {wait}s")
-                time.sleep(min(wait, 120))
+                if wait > 120:
+                    print(f"Creditos agotados (reintentar en {wait // 60} min)")
+                    raise RateLimited()
+                print(f"Limite momentaneo, esperando {wait}s")
+                time.sleep(wait)
                 continue
             print(f"HTTP {e.code} en {path}: {e.read()[:200]!r}")
             return None
@@ -85,6 +119,27 @@ def api_get(path, params, token):
             print(f"Error de red: {e}")
             time.sleep(5)
     return None
+
+
+def query_day(d, now, token, flights):
+    """Ventana de 2 dias UTC [d-1, d]: maximo permitido (2 particiones) y
+    con traslape para no perder vuelos que cruzan la medianoche UTC."""
+    res = api_get("/flights/aircraft", {
+        "icao24": ICAO24,
+        "begin": d - DAY,
+        "end": min(now, d + DAY - 1),
+    }, token)
+    if res is None:
+        return False
+    for f in res:
+        flights[str(f["firstSeen"])] = {
+            "firstSeen": f["firstSeen"],
+            "lastSeen": f["lastSeen"],
+            "dep": f.get("estDepartureAirport"),
+            "arr": f.get("estArrivalAirport"),
+            "callsign": (f.get("callsign") or "").strip(),
+        }
+    return True
 
 
 def enrich_airports(codes):
@@ -115,55 +170,97 @@ def enrich_airports(codes):
 
 
 def main():
-    days = int(os.environ.get("BACKFILL_DAYS") or 4)
-    token = get_token()
+    history_days = env_int("HISTORY_DAYS", 365)
+    recent_days = env_int("RECENT_DAYS", 3)
+    max_backfill = env_int("MAX_BACKFILL", 25)
+
     now = int(time.time())
+    today = now - now % DAY
+    target = today - (history_days - 1) * DAY
+
+    meta = load(F_META, {})
     flights = {str(f["firstSeen"]): f for f in load(F_FLIGHTS, [])}
     before = len(flights)
-    errors = 0
 
-    # OpenSky particiona por dia UTC y solo permite 2 particiones por consulta.
-    # Ventanas de 2 dias alineadas a medianoche UTC, avanzando 1 dia, para
-    # que los vuelos que cruzan la medianoche UTC tambien se capturen.
-    today = now - now % 86400
-    for i in range(days):
-        day = today - i * 86400
-        begin = day - 86400
-        end = min(now, day + 86400 - 1)
-        res = api_get("/flights/aircraft",
-                      {"icao24": ICAO24, "begin": begin, "end": end}, token)
-        if res is None:
-            errors += 1
-        else:
-            for f in res:
-                flights[str(f["firstSeen"])] = {
-                    "firstSeen": f["firstSeen"],
-                    "lastSeen": f["lastSeen"],
-                    "dep": f.get("estDepartureAirport"),
-                    "arr": f.get("estArrivalAirport"),
-                    "callsign": (f.get("callsign") or "").strip(),
-                }
-        time.sleep(1)
+    # Dia mas antiguo ya consultado de forma continua hacia atras.
+    oldest = meta.get("oldest_day")
+    if oldest is None and meta.get("days_checked") and meta.get("updated"):
+        up = meta["updated"]
+        oldest = up - up % DAY - (meta["days_checked"] - 1) * DAY
+    if oldest is None:
+        oldest = today + DAY  # nada consultado aun
+    newest = meta.get("newest_day")
+    if newest is None and meta.get("updated"):
+        newest = meta["updated"] - meta["updated"] % DAY
+    # Si no hubo corridas por varios dias, cubrir el hueco (max 30 dias).
+    span = recent_days
+    if newest is not None:
+        span = max(span, min(30, (today - newest) // DAY + recent_days))
+
+    token = get_token()
+    errors = 0
+    used = 0
+    limited = False
+    try:
+        # 1) Dias recientes (OpenSky publica los vuelos al dia siguiente)
+        for i in range(span):
+            d = today - i * DAY
+            ok = query_day(d, now, token, flights)
+            used += 1
+            errors += not ok
+            oldest = min(oldest, d)
+            newest = today
+            time.sleep(1)
+        # 2) Historial hacia atras
+        n = 0
+        while oldest > target and n < max_backfill:
+            d = oldest - DAY
+            ok = query_day(d, now, token, flights)
+            used += 1
+            n += 1
+            errors += not ok
+            oldest = d  # avanza aun si falla para no atorarse en un dia malo
+            time.sleep(1)
+    except RateLimited:
+        limited = True
 
     ordered = sorted(flights.values(), key=lambda f: f["firstSeen"], reverse=True)
     save(F_FLIGHTS, ordered)
     codes = {f["dep"] for f in ordered} | {f["arr"] for f in ordered}
     save(F_AIRPORTS, enrich_airports(codes))
 
-    live = api_get("/states/all", {"icao24": ICAO24}, token)
     state = None
-    if live and live.get("states"):
-        s = live["states"][0]
-        state = {"time": live["time"], "callsign": (s[1] or "").strip(),
-                 "lon": s[5], "lat": s[6], "alt_m": s[7] if s[7] is not None else s[13],
-                 "on_ground": s[8], "speed_ms": s[9], "track": s[10]}
+    if not limited:
+        try:
+            live = api_get("/states/all", {"icao24": ICAO24}, token)
+        except RateLimited:
+            live = None
+        if live and live.get("states"):
+            s = live["states"][0]
+            state = {"time": live["time"], "callsign": (s[1] or "").strip(),
+                     "lon": s[5], "lat": s[6],
+                     "alt_m": s[7] if s[7] is not None else s[13],
+                     "on_ground": s[8], "speed_ms": s[9], "track": s[10]}
     save(F_LIVE, {"checked": now, "state": state})
 
-    save(F_META, {"updated": now,
-                  "updated_iso": datetime.fromtimestamp(now, timezone.utc).isoformat(),
-                  "days_checked": days, "errors": errors})
-    print(f"Vuelos: {before} -> {len(ordered)} (errores: {errors})")
-    if errors and len(ordered) == before == 0:
+    covered_from = max(oldest - DAY, target - DAY) if oldest <= today else None
+    save(F_META, {
+        "updated": now,
+        "updated_iso": datetime.fromtimestamp(now, timezone.utc).isoformat(),
+        "oldest_day": oldest,
+        "newest_day": newest,
+        "history_from": iso_day(covered_from) if covered_from else None,
+        "history_target_days": history_days,
+        "history_complete": oldest <= target,
+        "queries": used,
+        "errors": errors,
+        "rate_limited": limited,
+    })
+    print(f"Vuelos: {before} -> {len(ordered)} | consultas: {used} | "
+          f"errores: {errors} | historial desde "
+          f"{iso_day(covered_from) if covered_from else '-'} | "
+          f"completo: {oldest <= target}")
+    if errors and errors == used and not ordered:
         sys.exit(1)
 
 

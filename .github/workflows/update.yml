@@ -5,10 +5,10 @@ on:
     - cron: "17 */6 * * *"   # cada 6 horas
   workflow_dispatch:
     inputs:
-      backfill_days:
-        description: "Dias hacia atras a consultar (primera vez: 30)"
+      max_consultas:
+        description: "Consultas de historial en esta corrida (30 creditos c/u)"
         required: false
-        default: "30"
+        default: "60"
 
 permissions:
   contents: write
@@ -29,7 +29,8 @@ jobs:
         env:
           OPENSKY_CLIENT_ID: ${{ secrets.OPENSKY_CLIENT_ID }}
           OPENSKY_CLIENT_SECRET: ${{ secrets.OPENSKY_CLIENT_SECRET }}
-          BACKFILL_DAYS: ${{ github.event.inputs.backfill_days || '4' }}
+          HISTORY_DAYS: "365"
+          MAX_BACKFILL: ${{ github.event.inputs.max_consultas || '25' }}
         run: python scripts/fetch_flights.py
       - name: Guardar cambios
         run: |
@@ -37,4 +38,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/
           git diff --cached --quiet || git commit -m "Actualizar vuelos XA-UWK"
+          git pull --rebase origin main
           git push

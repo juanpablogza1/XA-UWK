@@ -37,6 +37,7 @@ h1{font-size:22px;letter-spacing:.5px}
 .kpi .l{font-size:10.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
 #map{height:280px;border-radius:12px;background:#0e1626}
 .leaflet-container{background:#0e1626}
+.dark-tiles{filter:invert(1) hue-rotate(180deg) brightness(.9) contrast(.85) saturate(.5)}
 .bars{display:flex;align-items:flex-end;gap:4px;height:110px;padding-top:6px}
 .bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0}
 .bar i{display:block;width:100%;background:var(--acc2);border-radius:4px 4px 0 0;min-height:2px}
@@ -85,6 +86,8 @@ a.btn{display:inline-block;margin:6px 6px 0 0;padding:7px 10px;border-radius:8px
       <div><b>MSN</b>1534</div>
       <div><b>Propietario registrado</b>Alsuper S.A.</div>
       <div><b>Datos actualizados</b><span id="upd">—</span></div>
+      <div><b>Historial desde</b><span id="hist">—</span></div>
+      <div><b>Fuente</b>OpenSky Network</div>
     </div>
   </div>
 
@@ -152,8 +155,8 @@ function apLabel(c){ const a=apInfo(c); return a.city || a.name; }
 function initMap(){
   if(!window.L){ document.getElementById("map").innerHTML='<div class="empty">Mapa no disponible sin conexión</div>'; return; }
   map = L.map("map",{zoomControl:false,attributionControl:true}).setView([25.8,-99.5],5);
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{
-    attribution:'&copy; OpenStreetMap &copy; CARTO',subdomains:"abcd",maxZoom:12}).addTo(map);
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{
+    attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',maxZoom:15,className:"dark-tiles"}).addTo(map);
   routeLayer = L.layerGroup().addTo(map);
   selLayer = L.layerGroup().addTo(map);
 }
@@ -276,6 +279,9 @@ document.getElementById("m").addEventListener("change",render);
   document.getElementById("m").insertAdjacentHTML("beforeend",months.map(k=>{ const [y,m]=k.split("-");
     return `<option value="${k}">${esc(new Intl.DateTimeFormat("es-MX",{month:"long",year:"numeric"}).format(new Date(Date.UTC(+y,+m-1,15))))}</option>`; }).join(""));
   if(meta && meta.updated) document.getElementById("upd").textContent = fmtShort.format(new Date(meta.updated*1000))+" "+fmtT.format(new Date(meta.updated*1000));
+  if(meta && meta.history_from){ const [y,mo,d]=meta.history_from.split("-");
+    document.getElementById("hist").textContent = new Intl.DateTimeFormat("es-MX",{day:"2-digit",month:"short",year:"numeric",timeZone:"UTC"}).format(new Date(Date.UTC(+y,+mo-1,+d)))
+      + (meta.history_complete? "" : " (cargando hasta 1 año)"); }
   const s = live && live.state; const lv=document.getElementById("live");
   if(s && !s.on_ground && Date.now()/1000 - live.checked < 7200){
     lv.textContent = `En vuelo · ${Math.round((s.alt_m||0)*3.281/100)*100} ft`; lv.classList.add("on");
