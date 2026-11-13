@@ -1,0 +1,27 @@
+name: Prueba fuentes en vivo (temporal)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probar CORS
+        run: |
+          O="https://juanpablogza1.github.io"
+          for u in \
+            "https://api.adsb.lol/v2/hex/0d0929" \
+            "https://api.airplanes.live/v2/hex/0d0929" \
+            "https://opendata.adsb.fi/api/v2/hex/0d0929" \
+            "https://api.adsb.one/v2/hex/0d0929" \
+            "https://globe.airplanes.live/data/traces/29/trace_recent_0d0929.json" \
+            "https://globe.airplanes.live/data/traces/29/trace_full_0d0929.json" \
+            "https://globe.adsb.fi/data/traces/29/trace_full_0d0929.json" \
+            "https://globe.adsb.lol/data/traces/29/trace_full_0d0929.json" \
+            "https://adsb.lol/data/traces/29/trace_full_0d0929.json" ; do
+            echo "=== $u"
+            curl -s -m 20 --compressed -H "Origin: $O" -H "User-Agent: Mozilla/5.0 xa-uwk" -D /tmp/h -o /tmp/b "$u"
+            grep -iE "^HTTP|access-control-allow-origin|content-type" /tmp/h | tr -d '\r'
+            head -c 220 /tmp/b; echo
+          done
