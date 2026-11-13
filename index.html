@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>XA-UWK · Historial de vuelos</title>
+<meta name="theme-color" content="#0b1220">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{
+  --bg:#0b1220; --card:#121b2e; --card2:#18233a; --line:#24314d;
+  --text:#e7ecf5; --mut:#8b98b3; --acc:#f5a524; --acc2:#3fb7ff; --ok:#3ddc97;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--text);font:15px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+body{padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+.wrap{max-width:560px;margin:0 auto;padding:16px 14px 40px}
+header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.logo{width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,var(--acc),#e8590c);display:grid;place-items:center;flex:none}
+.logo svg{width:28px;height:28px;fill:#0b1220}
+h1{font-size:22px;letter-spacing:.5px}
+.sub{color:var(--mut);font-size:13px}
+.live{margin-left:auto;font-size:12px;padding:5px 9px;border-radius:999px;background:var(--card2);color:var(--mut);white-space:nowrap}
+.live.on{background:rgba(61,220,151,.15);color:var(--ok)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.card h2{font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--mut);margin-bottom:10px;font-weight:600}
+.specs{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;font-size:13px}
+.specs b{display:block;color:var(--mut);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.6px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center}
+.kpi .v{font-size:19px;white-space:nowrap;font-weight:700;font-variant-numeric:tabular-nums}
+.kpi .l{font-size:10.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+#map{height:280px;border-radius:12px;background:#0e1626}
+.leaflet-container{background:#0e1626}
+.bars{display:flex;align-items:flex-end;gap:4px;height:110px;padding-top:6px}
+.bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0}
+.bar i{display:block;width:100%;background:var(--acc2);border-radius:4px 4px 0 0;min-height:2px}
+.bar span{font-size:10px;color:var(--mut);margin-top:4px;white-space:nowrap}
+.bar em{font-style:normal;font-size:10px;color:var(--text);margin-bottom:2px}
+.routes li{list-style:none;display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px}
+.routes li:last-child{border:0}
+.routes .n{color:var(--acc);font-weight:700}
+.filters{display:flex;gap:8px;margin-bottom:10px}
+.filters input,.filters select{flex:1;min-width:0;background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:15px}
+.fl{background:var(--card2);border-radius:12px;padding:12px;margin-bottom:8px;cursor:pointer;border:1px solid transparent}
+.fl.sel{border-color:var(--acc)}
+.fl .top{display:flex;justify-content:space-between;font-size:12px;color:var(--mut);margin-bottom:6px}
+.fl .rt{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px}
+.fl .ap{font-size:20px;font-weight:700;letter-spacing:.5px}
+.fl .ap small{display:block;font-size:11.5px;font-weight:400;color:var(--mut);letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fl .r{text-align:right}
+.fl .mid{color:var(--acc);font-size:12px;text-align:center}
+.fl .mid svg{width:22px;height:22px;fill:var(--acc);display:block;margin:0 auto}
+.fl .times{display:flex;justify-content:space-between;font-size:13px;margin-top:6px;font-variant-numeric:tabular-nums}
+.fl .more{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:13px;color:var(--mut)}
+.fl.sel .more{display:block}
+a.btn{display:inline-block;margin:6px 6px 0 0;padding:7px 10px;border-radius:8px;background:var(--card);color:var(--acc2);text-decoration:none;font-size:13px;border:1px solid var(--line)}
+.empty{color:var(--mut);text-align:center;padding:20px 8px;font-size:14px}
+.foot{color:var(--mut);font-size:12px;text-align:center;margin-top:14px}
+.foot a{color:var(--acc2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo"><svg viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg></div>
+    <div>
+      <h1>XA-UWK</h1>
+      <div class="sub">Pilatus PC-12 · Hex 0D0929</div>
+    </div>
+    <div class="live" id="live">Sin señal</div>
+  </header>
+
+  <div class="card">
+    <h2>Aeronave</h2>
+    <div class="specs">
+      <div><b>Matrícula</b>XA-UWK (México)</div>
+      <div><b>Modelo</b>Pilatus PC-12</div>
+      <div><b>Mode S (ICAO24)</b>0D0929</div>
+      <div><b>MSN</b>1534</div>
+      <div><b>Propietario registrado</b>Alsuper S.A.</div>
+      <div><b>Datos actualizados</b><span id="upd">—</span></div>
+    </div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="v" id="k1">0</div><div class="l">Vuelos</div></div>
+    <div class="kpi"><div class="v" id="k2">0</div><div class="l">Horas</div></div>
+    <div class="kpi"><div class="v" id="k3">0</div><div class="l">Aeropuertos</div></div>
+    <div class="kpi"><div class="v" id="k4">—</div><div class="l">Último</div></div>
+  </div>
+
+  <div class="card">
+    <h2>Mapa de rutas</h2>
+    <div id="map"></div>
+  </div>
+
+  <div class="card">
+    <h2>Vuelos por mes</h2>
+    <div class="bars" id="bars"></div>
+  </div>
+
+  <div class="card">
+    <h2>Rutas más frecuentes</h2>
+    <ul class="routes" id="routes"></ul>
+  </div>
+
+  <div class="card">
+    <h2>Historial</h2>
+    <div class="filters">
+      <input id="q" type="search" placeholder="Aeropuerto o ciudad">
+      <select id="m"><option value="">Todos los meses</option></select>
+    </div>
+    <div id="list"></div>
+  </div>
+
+  <div class="card">
+    <h2>Rastreo externo</h2>
+    <a class="btn" href="https://globe.adsbexchange.com/?icao=0d0929" target="_blank" rel="noopener">ADS-B Exchange</a>
+    <a class="btn" href="https://www.flightaware.com/live/flight/XAUWK/history" target="_blank" rel="noopener">FlightAware</a>
+    <a class="btn" href="https://adsb.lol/?icao=0d0929" target="_blank" rel="noopener">adsb.lol</a>
+    <a class="btn" href="https://www.flightradar24.com/data/aircraft/xa-uwk" target="_blank" rel="noopener">Flightradar24</a>
+  </div>
+
+  <div class="foot">Datos ADS-B: <a href="https://opensky-network.org" target="_blank" rel="noopener">OpenSky Network</a>. Aeropuertos: OurAirports. Horas en hora de Monterrey. Origen/destino son estimados por OpenSky.</div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const TZ = "America/Monterrey";
+const fmtD = new Intl.DateTimeFormat("es-MX",{timeZone:TZ,weekday:"short",day:"2-digit",month:"short",year:"numeric"});
+const fmtT = new Intl.DateTimeFormat("es-MX",{timeZone:TZ,hour:"2-digit",minute:"2-digit",hour12:false});
+const fmtM = new Intl.DateTimeFormat("es-MX",{timeZone:TZ,month:"short",year:"2-digit"});
+const fmtShort = new Intl.DateTimeFormat("es-MX",{timeZone:TZ,day:"2-digit",month:"short"});
+const fmtK = t => { const p=fmtShort.formatToParts(new Date(t*1000)); return p.find(x=>x.type==="day").value+" "+p.find(x=>x.type==="month").value.replace(".",""); };
+const monthKey = t => { const p = new Intl.DateTimeFormat("en-CA",{timeZone:TZ,year:"numeric",month:"2-digit"}).format(new Date(t*1000)); return p.slice(0,7); };
+const dur = s => { const h=Math.floor(s/3600), m=Math.round((s%3600)/60); return h? `${h} h ${m} min` : `${m} min`; };
+const esc = s => String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+let FL=[], AP={}, map, routeLayer, selLayer, selId=null, shown=25;
+
+async function getJSON(p, def){ try{ const r=await fetch(p+"?t="+Date.now(),{cache:"no-store"}); if(!r.ok) throw 0; return await r.json(); }catch(e){ return def; } }
+
+function apInfo(c){ return c && AP[c] ? AP[c] : {name:c||"Desconocido",city:"",lat:null,lon:null,iata:""}; }
+function apLabel(c){ const a=apInfo(c); return a.city || a.name; }
+
+function initMap(){
+  if(!window.L){ document.getElementById("map").innerHTML='<div class="empty">Mapa no disponible sin conexión</div>'; return; }
+  map = L.map("map",{zoomControl:false,attributionControl:true}).setView([25.8,-99.5],5);
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{
+    attribution:'&copy; OpenStreetMap &copy; CARTO',subdomains:"abcd",maxZoom:12}).addTo(map);
+  routeLayer = L.layerGroup().addTo(map);
+  selLayer = L.layerGroup().addTo(map);
+}
+
+function arc(a,b){ // curva suave entre dos puntos
+  const pts=[], n=24, mx=(a[0]+b[0])/2, my=(a[1]+b[1])/2;
+  const dx=b[1]-a[1], dy=b[0]-a[0], k=0.18;
+  const cx=mx - dx*k, cy=my + dy*k;
+  for(let i=0;i<=n;i++){ const t=i/n;
+    pts.push([(1-t)*(1-t)*a[0]+2*(1-t)*t*cx+t*t*b[0],(1-t)*(1-t)*a[1]+2*(1-t)*t*cy+t*t*b[1]]); }
+  return pts;
+}
+
+function drawMap(list){
+  if(!map) return;
+  routeLayer.clearLayers();
+  const used = new Map(), pairs = new Map();
+  list.forEach(f=>{
+    [f.dep,f.arr].forEach(c=>{ const a=apInfo(c); if(a.lat!=null) used.set(c,(used.get(c)||0)+1); });
+    if(f.dep && f.arr && f.dep!==f.arr){ const k=[f.dep,f.arr].sort().join("-"); pairs.set(k,(pairs.get(k)||0)+1); }
+  });
+  const max = Math.max(1,...pairs.values());
+  pairs.forEach((n,k)=>{ const [x,y]=k.split("-").map(apInfo);
+    if(x.lat==null||y.lat==null) return;
+    L.polyline(arc([x.lat,x.lon],[y.lat,y.lon]),{color:"#3fb7ff",weight:1.5+3*n/max,opacity:.55}).addTo(routeLayer); });
+  const bounds=[];
+  used.forEach((n,c)=>{ const a=apInfo(c); bounds.push([a.lat,a.lon]);
+    L.circleMarker([a.lat,a.lon],{radius:4+Math.min(8,Math.sqrt(n)*1.5),color:"#f5a524",fillColor:"#f5a524",fillOpacity:.85,weight:1})
+     .bindPopup(`<b>${esc(c)}</b>${a.iata?" / "+esc(a.iata):""}<br>${esc(a.name)}<br>${esc(a.city)}<br>${n} operaciones`).addTo(routeLayer); });
+  if(bounds.length>1) map.fitBounds(bounds,{padding:[24,24],maxZoom:8});
+  else if(bounds.length===1) map.setView(bounds[0],7);
+}
+
+function highlight(f){
+  if(!map) return;
+  selLayer.clearLayers();
+  if(!f) return;
+  const a=apInfo(f.dep), b=apInfo(f.arr);
+  if(a.lat!=null&&b.lat!=null&&f.dep!==f.arr){
+    const l=L.polyline(arc([a.lat,a.lon],[b.lat,b.lon]),{color:"#f5a524",weight:4}).addTo(selLayer);
+    map.fitBounds(l.getBounds(),{padding:[30,30],maxZoom:9});
+  } else if(a.lat!=null){ map.setView([a.lat,a.lon],8); }
+}
+
+function drawBars(list){
+  const by={}; list.forEach(f=>{ const k=monthKey(f.firstSeen); by[k]=(by[k]||0)+1; });
+  const keys=Object.keys(by).sort().slice(-12);
+  const el=document.getElementById("bars");
+  if(!keys.length){ el.innerHTML='<div class="empty" style="width:100%">Sin datos</div>'; return; }
+  const max=Math.max(...keys.map(k=>by[k]));
+  el.innerHTML = keys.map(k=>{ const [y,m]=k.split("-"); const lbl=fmtM.format(new Date(Date.UTC(+y,+m-1,15)));
+    return `<div class="bar"><em>${by[k]}</em><i style="height:${Math.max(2,by[k]/max*80)}%"></i><span>${esc(lbl)}</span></div>`; }).join("");
+}
+
+function drawRoutes(list){
+  const c={}; list.forEach(f=>{ const k=`${f.dep||"?"}→${f.arr||"?"}`; c[k]=(c[k]||0)+1; });
+  const top=Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  document.getElementById("routes").innerHTML = top.length? top.map(([k,n])=>{ const [d,a]=k.split("→");
+    return `<li><span>${esc(apLabel(d==="?"?null:d))} → ${esc(apLabel(a==="?"?null:a))}</span><span class="n">${n}</span></li>`; }).join("")
+    : '<li class="empty">Sin datos</li>';
+}
+
+function drawKPIs(list){
+  const secs=list.reduce((s,f)=>s+Math.max(0,f.lastSeen-f.firstSeen),0);
+  const aps=new Set(); list.forEach(f=>{ if(f.dep) aps.add(f.dep); if(f.arr) aps.add(f.arr); });
+  document.getElementById("k1").textContent=list.length;
+  document.getElementById("k2").textContent=(secs/3600).toFixed(secs/3600<100?1:0);
+  document.getElementById("k3").textContent=aps.size;
+  document.getElementById("k4").textContent=list.length? fmtK(list[0].lastSeen) : "—";
+}
+
+function drawList(list){
+  const el=document.getElementById("list");
+  if(!FL.length){ el.innerHTML='<div class="empty">Aún no hay vuelos guardados. Corre el workflow “Actualizar vuelos XA-UWK” en GitHub Actions.</div>'; return; }
+  if(!list.length){ el.innerHTML='<div class="empty">Ningún vuelo coincide con el filtro.</div>'; return; }
+  el.innerHTML = list.slice(0,shown).map(f=>{ const a=apInfo(f.dep), b=apInfo(f.arr), id=f.firstSeen;
+    const day=new Date(f.firstSeen*1000).toISOString().slice(0,10);
+    return `<div class="fl${selId===id?" sel":""}" data-id="${id}">
+      <div class="top"><span>${esc(fmtD.format(new Date(f.firstSeen*1000)))}</span><span>${f.callsign?esc(f.callsign):""}</span></div>
+      <div class="rt">
+        <div class="ap">${esc(f.dep||"???")}<small>${esc(a.city||a.name)}</small></div>
+        <div class="mid"><svg viewBox="0 0 24 24" style="transform:rotate(90deg)"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg>${dur(f.lastSeen-f.firstSeen)}</div>
+        <div class="ap r">${esc(f.arr||"???")}<small>${esc(b.city||b.name)}</small></div>
+      </div>
+      <div class="times"><span>Despegue ${fmtT.format(new Date(f.firstSeen*1000))}</span><span>Aterrizaje ${fmtT.format(new Date(f.lastSeen*1000))}</span></div>
+      <div class="more">
+        <div>${esc(a.name)} → ${esc(b.name)}</div>
+        <a class="btn" href="https://globe.adsbexchange.com/?icao=0d0929&showTrace=${day}" target="_blank" rel="noopener">Ver trayectoria del día</a>
+      </div></div>`; }).join("") + (list.length>shown? `<a class="btn" id="more" href="#" style="display:block;text-align:center">Ver más (${list.length-shown} restantes)</a>`:"");
+}
+
+function filtered(){
+  const q=document.getElementById("q").value.trim().toLowerCase();
+  const m=document.getElementById("m").value;
+  return FL.filter(f=>{
+    if(m && monthKey(f.firstSeen)!==m) return false;
+    if(!q) return true;
+    return [f.dep,f.arr].some(c=>{ const a=apInfo(c); return [c,a.name,a.city,a.iata].some(v=>v&&String(v).toLowerCase().includes(q)); });
+  });
+}
+
+function render(){ shown=25; const l=filtered(); drawKPIs(l); drawBars(l); drawRoutes(l); drawList(l); drawMap(l); highlight(l.find(f=>f.firstSeen===selId)); }
+
+document.getElementById("list").addEventListener("click",e=>{
+  if(e.target.id==="more"){ e.preventDefault(); shown+=25; drawList(filtered()); return; }
+  if(e.target.closest("a")) return;
+  const c=e.target.closest(".fl"); if(!c) return;
+  const id=+c.dataset.id; selId = selId===id? null : id;
+  drawList(filtered()); highlight(FL.find(f=>f.firstSeen===selId));
+  if(selId) document.getElementById("map").scrollIntoView({behavior:"smooth",block:"center"});
+});
+document.getElementById("q").addEventListener("input",render);
+document.getElementById("m").addEventListener("change",render);
+
+(async()=>{
+  initMap();
+  const [fl,ap,live,meta] = await Promise.all([getJSON("data/flights.json",[]),getJSON("data/airports.json",{}),getJSON("data/live.json",{}),getJSON("data/meta.json",{})]);
+  FL=(fl||[]).sort((a,b)=>b.firstSeen-a.firstSeen); AP=ap||{};
+  const months=[...new Set(FL.map(f=>monthKey(f.firstSeen)))].sort().reverse();
+  document.getElementById("m").insertAdjacentHTML("beforeend",months.map(k=>{ const [y,m]=k.split("-");
+    return `<option value="${k}">${esc(new Intl.DateTimeFormat("es-MX",{month:"long",year:"numeric"}).format(new Date(Date.UTC(+y,+m-1,15))))}</option>`; }).join(""));
+  if(meta && meta.updated) document.getElementById("upd").textContent = fmtShort.format(new Date(meta.updated*1000))+" "+fmtT.format(new Date(meta.updated*1000));
+  const s = live && live.state; const lv=document.getElementById("live");
+  if(s && !s.on_ground && Date.now()/1000 - live.checked < 7200){
+    lv.textContent = `En vuelo · ${Math.round((s.alt_m||0)*3.281/100)*100} ft`; lv.classList.add("on");
+    if(s.lat!=null && map) L.circleMarker([s.lat,s.lon],{radius:7,color:"#3ddc97",fillColor:"#3ddc97",fillOpacity:1}).bindPopup("Última posición").addTo(map);
+  } else if(s){ lv.textContent="En tierra"; }
+  render();
+})();
+
+if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body>
+</html>
