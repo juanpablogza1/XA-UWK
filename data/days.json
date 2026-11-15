@@ -4380,7 +4380,7 @@
   "points": 1720
  },
  "2026-11-14": {
-  "status": "pending",
-  "checked": 1794710066
+  "status": "none",
+  "source": "prod-0"
  }
 }
