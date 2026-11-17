@@ -1,16 +1,13 @@
 {
- "checked": 1794882330,
+ "checked": 1794913355,
  "last": {
-  "t": 1794608142,
-  "lat": 25.85971,
-  "lon": -100.23979,
-  "ground": true,
-  "alt": null,
-  "gs": 0,
-  "trk": 34,
-  "historic": true,
-  "ap": "MMAN",
-  "apName": "Del Norte International Airport",
-  "apCity": "Monterrey"
+  "t": 1794873597,
+  "lat": 25.79192,
+  "lon": -100.00275,
+  "ground": false,
+  "alt": 5000,
+  "gs": 220,
+  "trk": 120,
+  "historic": true
  }
 }
