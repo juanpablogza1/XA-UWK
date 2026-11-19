@@ -4398,7 +4398,7 @@
   "points": 1028
  },
  "2026-11-18": {
-  "status": "pending",
-  "checked": 1795050957
+  "status": "none",
+  "source": "staging-0"
  }
 }
