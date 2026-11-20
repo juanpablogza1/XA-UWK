@@ -4402,7 +4402,8 @@
   "source": "staging-0"
  },
  "2026-11-19": {
-  "status": "pending",
-  "checked": 1795135251
+  "status": "ok",
+  "source": "prod-0",
+  "points": 6
  }
 }
