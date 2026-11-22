@@ -4410,5 +4410,9 @@
   "status": "ok",
   "source": "prod-0",
   "points": 6
+ },
+ "2026-11-21": {
+  "status": "none",
+  "source": "staging-0"
  }
 }
