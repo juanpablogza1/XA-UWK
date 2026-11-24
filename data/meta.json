@@ -1,5 +1,5 @@
 {
- "updated": 1795427471,
+ "updated": 1795499645,
  "gaps": [
   [
    "2024-01-30",
@@ -72,8 +72,8 @@
  ],
  "source": "adsb.lol (ODbL 1.0)",
  "from": "2023-12-29",
- "to": "2026-11-22",
- "target_from": "2025-11-22",
+ "to": "2026-11-23",
+ "target_from": "2025-11-23",
  "days_ok": 180,
  "days_pending": 0,
  "complete": true,
