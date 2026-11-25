@@ -519,6 +519,16 @@
   "type": "small_airport",
   "elev": 6227
  },
+ "MMPB": {
+  "name": "Hermanos Serdán International Airport",
+  "city": "Puebla",
+  "country": "MX",
+  "iata": "PBC",
+  "lat": 19.158465,
+  "lon": -98.371582,
+  "type": "large_airport",
+  "elev": 7361
+ },
  "MMQT": {
   "name": "Querétaro Intercontinental Airport",
   "city": "Querétaro",

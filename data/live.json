@@ -1,13 +1,13 @@
 {
- "checked": 1795233316,
+ "checked": 1795602733,
  "last": {
-  "t": 1795202695,
-  "lat": 25.8621,
-  "lon": -100.24255,
+  "t": 1795556256,
+  "lat": 25.85958,
+  "lon": -100.23911,
   "ground": true,
   "alt": null,
   "gs": 0,
-  "trk": 278,
+  "trk": 124,
   "historic": true,
   "ap": "MMAN",
   "apName": "Del Norte International Airport",

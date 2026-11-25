@@ -4424,7 +4424,8 @@
   "source": "prod-0"
  },
  "2026-11-24": {
-  "status": "pending",
-  "checked": 1795570340
+  "status": "ok",
+  "source": "prod-0",
+  "points": 1097
  }
 }
