@@ -1,5 +1,5 @@
 {
- "updated": 1795661583,
+ "updated": 1795695171,
  "gaps": [
   [
    "2024-01-30",
@@ -72,10 +72,10 @@
  ],
  "source": "adsb.lol (ODbL 1.0)",
  "from": "2023-12-29",
- "to": "2026-11-24",
+ "to": "2026-11-25",
  "target_from": "2025-11-25",
  "days_ok": 181,
- "days_pending": 1,
+ "days_pending": 0,
  "complete": true,
  "flights": 279
 }

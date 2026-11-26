@@ -4429,7 +4429,7 @@
   "points": 1097
  },
  "2026-11-25": {
-  "status": "pending",
-  "checked": 1795661571
+  "status": "none",
+  "source": "prod-0"
  }
 }
